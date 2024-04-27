@@ -11,6 +11,7 @@ import ChatScreen from "./screens/ChatScreen";
 import FeedScreen from "./screens/FeedScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import NewCharacter from "./screens/NewCharacter";
+import ChatListScreen from "./screens/ChatListScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -28,7 +29,7 @@ const BottomTabNavigator = () => {
 
                     if (route.name === "Home") {
                         iconName = focused ? "home" : "home-outline";
-                    } else if (route.name === "Chat") {
+                    } else if (route.name === "ChatList") {
                         iconName = focused ? "chatbubbles" : "chatbubbles-outline";
                     } else if (route.name === "Feed") {
                         iconName = focused ? "newspaper" : "newspaper-outline";
@@ -47,7 +48,11 @@ const BottomTabNavigator = () => {
             })}
         >
             <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: "Home" }} />
-            <Tab.Screen name="Chat" component={ChatScreen} options={{ tabBarLabel: "Chat" }} />
+            <Tab.Screen
+                name="ChatList"
+                component={ChatListScreen}
+                options={{ tabBarLabel: "Chats" }}
+            />
             <Tab.Screen name="Feed" component={FeedScreen} options={{ tabBarLabel: "Feed" }} />
             <Tab.Screen
                 name="NewCharacter"
@@ -72,6 +77,7 @@ const Navigation = () => {
                     component={BottomTabNavigator}
                     options={{ headerShown: false }}
                 />
+                <Stack.Screen name="Chat" component={ChatScreen} options={{ headerShown: false }} />
             </Stack.Navigator>
         </NavigationContainer>
     );

@@ -1,16 +1,24 @@
 import { View, Text, Image, TouchableOpacity } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useState } from "react";
+import { useNavigation } from "@react-navigation/native";
 
 const MyListImage = ({ character, imageWidth, imageHeight, onHeartPress }) => {
+    const navigation = useNavigation();
+
     const [isLiked, setIsLiked] = useState(false);
 
     const toggleLike = () => {
         setIsLiked(!isLiked);
     };
 
+    const handleCharacterPress = () => {
+        // Navigate to ChatScreen when character is pressed
+        navigation.navigate("Chat", { character });
+    };
+
     return (
-        <TouchableOpacity className="mr-4" activeOpacity={0.8}>
+        <TouchableOpacity className="mr-4" activeOpacity={0.8} onPress={handleCharacterPress}>
             {/* Image */}
             <View>
                 <Image
