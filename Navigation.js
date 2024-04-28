@@ -12,6 +12,7 @@ import FeedScreen from "./screens/FeedScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import NewCharacter from "./screens/NewCharacter";
 import ChatListScreen from "./screens/ChatListScreen";
+import CreateCharacter from "./screens/CreateCharacter";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -78,6 +79,11 @@ const Navigation = () => {
                     options={{ headerShown: false }}
                 />
                 <Stack.Screen name="Chat" component={ChatScreen} options={{ headerShown: false }} />
+                <Stack.Screen
+                    name="CreateCharacter"
+                    component={CreateCharacter}
+                    options={{ headerShown: false }}
+                />
             </Stack.Navigator>
         </NavigationContainer>
     );

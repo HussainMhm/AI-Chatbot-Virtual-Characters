@@ -19,9 +19,9 @@ const HomeScreen = ({ navigation }) => {
         { name: "Character 1", image: require("../assets/images/character1.jpeg") },
         { name: "Character 2", image: require("../assets/images/character2.jpeg") },
         { name: "Character 3", image: require("../assets/images/character3.jpeg") },
-        { name: "Character 5", image: require("../assets/images/character5.jpeg") },
-        { name: "Character 6", image: require("../assets/images/character7.jpeg") },
-        { name: "Character 7", image: require("../assets/images/character8.jpeg") },
+        { name: "Character 5", image: require("../assets/images/character4.jpeg") },
+        { name: "Character 6", image: require("../assets/images/character5.jpeg") },
+        { name: "Character 7", image: require("../assets/images/character6.jpeg") },
         // Add more characters as needed
     ];
 

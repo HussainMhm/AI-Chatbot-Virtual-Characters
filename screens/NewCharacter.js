@@ -1,7 +1,10 @@
 import { View, Text, SafeAreaView, Platform, StatusBar, TouchableOpacity } from "react-native";
+import { useNavigation } from "@react-navigation/native"; // For navigation between screens
 import MyHeader from "../components/MyHeader";
 
 const NewCharacter = () => {
+    const navigation = useNavigation(); // Initialize navigation
+
     return (
         <SafeAreaView
             className={`flex-1 bg-white`}
@@ -15,7 +18,7 @@ const NewCharacter = () => {
 
             <TouchableOpacity
                 className="bg-orange-500 p-4 m-4 items-center rounded-2xl"
-                onPress={() => {}}
+                onPress={() => navigation.navigate("CreateCharacter")} // Navigate to the CreateCharacter screen
             >
                 <Text className="text-base font-bold">Create New Character</Text>
             </TouchableOpacity>
