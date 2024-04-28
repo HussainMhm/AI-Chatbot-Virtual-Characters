@@ -1,12 +1,13 @@
 import { View, Text, SafeAreaView, Platform, StatusBar } from "react-native";
+import MyHeader from "../components/MyHeader";
 
 const FeedScreen = () => {
     return (
         <SafeAreaView
-            className={`flex-1 items-center justify-center`}
+            className={`flex-1 bg-white`}
             style={{ paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0 }}
         >
-            <Text>Feed Screen</Text>
+            <MyHeader title="Feed" icon={"newspaper"} />
         </SafeAreaView>
     );
 };
