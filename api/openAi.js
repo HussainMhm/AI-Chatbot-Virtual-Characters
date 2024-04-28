@@ -39,7 +39,9 @@ const chatApiCall = async (prompt, messages) => {
     try {
         const res = await client.post(chatGbtEndpoint, {
             model: 'gpt-3.5-turbo',
-            messages
+            messages: messages,
+            temperature: 0.5,
+            max_tokens: 150
         });
 
         let answer = res.data?.choices[0]?.message?.content;

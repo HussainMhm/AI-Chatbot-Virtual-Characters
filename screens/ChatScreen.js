@@ -19,13 +19,13 @@ import MyChatInputBar from "../components/MyChatInputBar";
 
 import Voice from "@react-native-community/voice";
 import { apiCall } from "../api/openAi";
-
+import { getImage } from "../helpers/index"
 const ChatScreen = ({ navigation, route }) => {
     const { character } = route.params;
 
     console.log(character);
 
-    const [messages, setMessages] = useState([]);
+    const [messages, setMessages] = useState([{ role: "system", content: character.system_content }, { role: "assistant", content: character.assistant_content }]);
     const [messageText, setMessageText] = useState("");
     const [loading, setLoading] = useState(false);
 
@@ -118,7 +118,7 @@ const ChatScreen = ({ navigation, route }) => {
                     <Text>{message.content}</Text>
                 </View>
             );
-        } else {
+        } else if (message.role === "assistant") {
             if (message.content.startsWith("https://")) {
                 return (
                     <View className="bg-gray-800 py-3 px-4 rounded-2xl mb-2 self-start">
@@ -141,9 +141,7 @@ const ChatScreen = ({ navigation, route }) => {
 
     return (
         <ImageBackground
-            source={{
-                uri: "https://www.teahub.io/photos/full/322-3227128_sky-wallpaper-phone.jpg",
-            }}
+            source={getImage(character.id)}
             className="flex-1"
             resizeMode="cover"
         >
