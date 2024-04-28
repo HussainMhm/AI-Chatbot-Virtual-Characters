@@ -1,0 +1,28 @@
+{
+    "categories": [
+        {
+            "id": 1,
+            "name": "Experts"
+        },
+        {
+            "id": 2,
+            "name": "Actors"
+        },
+        {
+            "id": 3,
+            "name": "Sport"
+        },
+        {
+            "id": 4,
+            "name": "CEOs"
+        },
+        {
+            "id": 5,
+            "name": "Politics"
+        },
+        {
+            "id": 6,
+            "name": "Scientists"
+        }
+    ]
+}
