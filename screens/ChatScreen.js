@@ -21,7 +21,9 @@ import Voice from "@react-native-community/voice";
 import { apiCall } from "../api/openAi";
 
 const ChatScreen = ({ navigation, route }) => {
-    const { name, image } = route.params;
+    const { character } = route.params;
+
+    console.log(character);
 
     const [messages, setMessages] = useState([]);
     const [messageText, setMessageText] = useState("");
