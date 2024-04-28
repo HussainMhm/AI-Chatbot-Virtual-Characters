@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import {
     View,
     Text,
@@ -7,29 +7,28 @@ import {
     StatusBar,
     ImageBackground,
     ScrollView,
-    TextInput,
-    TouchableOpacity,
-    KeyboardAvoidingView,
     Alert,
     Image,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 import MyChatTopBar from "../components/MyChatTopBar";
 import MyChatInputBar from "../components/MyChatInputBar";
 
-import Voice from "@react-native-community/voice";
 import { apiCall } from "../api/openAi";
-import { getImage } from "../helpers/index"
+import { getImage } from "../helpers/index";
+
 const ChatScreen = ({ navigation, route }) => {
     const { character } = route.params;
-
     console.log(character);
 
-    const [messages, setMessages] = useState([{ role: "system", content: character.system_content }, { role: "assistant", content: character.assistant_content }]);
+    // State to store the messages
+    const [messages, setMessages] = useState([
+        { role: "system", content: character.system_content },
+        { role: "assistant", content: character.assistant_content },
+    ]);
     const [messageText, setMessageText] = useState("");
     const [loading, setLoading] = useState(false);
-
-    const [recording, setRecording] = useState(false);
 
     const ScrollViewRef = useRef();
 
@@ -42,13 +41,13 @@ const ChatScreen = ({ navigation, route }) => {
                 content: messageText.trim(),
             });
             setMessages([...newMessages]);
-            updateScroleView();
+            updateScrollView();
             setLoading(true);
             apiCall(messageText.trim(), newMessages).then((res) => {
                 if (res?.success) {
                     setLoading(false);
                     setMessages([...res.data]);
-                    updateScroleView();
+                    updateScrollView();
                 } else {
                     Alert.alert("Error", res.msg);
                 }
@@ -58,57 +57,12 @@ const ChatScreen = ({ navigation, route }) => {
         }
     };
 
-    const updateScroleView = () => {
+    // Function to scroll to the end of the chat
+    const updateScrollView = () => {
         setTimeout(() => {
             ScrollViewRef?.current?.scrollToEnd({ animated: true });
         });
     };
-
-    const speechStartHandler = (e) => {
-        console.log("speach start handler");
-    };
-    const speechEndHandler = (e) => {
-        setRecording(false);
-        console.log("speach end handler");
-    };
-    const speechResultsHandler = (e) => {
-        setMessageText(e.value[0] ?? "");
-        console.log(`voice event: ${e}`);
-    };
-    const speechErrorHandler = (e) => {
-        console.log(`speach error handler: ${e}`);
-    };
-
-    const startRecording = async () => {
-        setRecording(true);
-        try {
-            await Voice.start("en-US");
-        } catch (error) {
-            console.log(`error: ${error}`);
-        }
-    };
-
-    const stopRecording = async () => {
-        try {
-            await Voice.stop();
-            setRecording(false);
-            // fetch api response
-        } catch (error) {
-            console.log(`error: ${error}`);
-        }
-    };
-
-    useEffect(() => {
-        // Voice Handler Events
-        Voice.onSpeechStart = speechStartHandler;
-        Voice.onSpeechEnd = speechEndHandler;
-        Voice.onSpeechResults = speechResultsHandler;
-        Voice.onSpeechError = speechErrorHandler;
-        return () => {
-            // Destroy the voice instance
-            Voice.destroy().then(Voice.removeAllListeners);
-        };
-    }, []);
 
     // Function to render the message bubbles
     const renderMessage = (message, index) => {
@@ -140,11 +94,7 @@ const ChatScreen = ({ navigation, route }) => {
     };
 
     return (
-        <ImageBackground
-            source={getImage(character.id)}
-            className="flex-1"
-            resizeMode="cover"
-        >
+        <ImageBackground source={getImage(character.id)} className="flex-1" resizeMode="cover">
             <SafeAreaView
                 style={{
                     flex: 1,
@@ -157,9 +107,10 @@ const ChatScreen = ({ navigation, route }) => {
                     {messages.map((message, i) => (
                         <View key={i}>{renderMessage(message)}</View>
                     ))}
+
                     {loading && (
                         <View className="bg-gray-800 py-3 px-4 rounded-2xl mb-2 self-start">
-                            <Text className="text-white">loading</Text>
+                            <Ionicons name="ellipsis-horizontal" size={24} color="white" />
                         </View>
                     )}
                 </ScrollView>
@@ -168,9 +119,6 @@ const ChatScreen = ({ navigation, route }) => {
                     messageText={messageText}
                     setMessageText={setMessageText}
                     sendMessage={sendMessage}
-                    recording={recording}
-                    startRecording={startRecording}
-                    stopRecording={stopRecording}
                 />
             </SafeAreaView>
         </ImageBackground>

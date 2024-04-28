@@ -1,4 +1,12 @@
-import { View, Text, TextInput, TouchableOpacity, SafeAreaView, Platform, StatusBar } from "react-native";
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    SafeAreaView,
+    Platform,
+    StatusBar,
+} from "react-native";
 import { useState } from "react";
 import MyHeader from "../components/MyHeader";
 
@@ -19,10 +27,9 @@ const CreateCharacter = ({ navigation }) => {
             className={`flex-1 bg-white`}
             style={{ paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0 }}
         >
-            <MyHeader title="Create New Character" goBack={() => { navigation.goBack() }} />
+            <MyHeader title="Create New Character" />
 
             <View className="flex-1 p-4">
-
                 <TextInput
                     className="bg-gray-200 p-3 rounded-md"
                     placeholder="Character Name"
