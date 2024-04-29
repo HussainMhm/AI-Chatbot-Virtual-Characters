@@ -8,7 +8,7 @@ import {
     ImageBackground,
     ScrollView,
     Alert,
-    Image,
+    TouchableOpacity,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -20,19 +20,16 @@ import { getImage } from "../helpers/index";
 
 const ChatScreen = ({ navigation, route }) => {
     const { character } = route.params;
-    console.log(character);
 
-    // State to store the messages
     const [messages, setMessages] = useState([
         { role: "system", content: character.system_content },
         { role: "assistant", content: character.assistant_content },
     ]);
     const [messageText, setMessageText] = useState("");
     const [loading, setLoading] = useState(false);
-
+    const [recommendationsVisible, setRecommendationsVisible] = useState(true);
     const ScrollViewRef = useRef();
 
-    // Function to send a message
     const sendMessage = () => {
         if (messageText.trim().length > 0) {
             let newMessages = [...messages];
@@ -52,30 +49,54 @@ const ChatScreen = ({ navigation, route }) => {
                     Alert.alert("Error", res.msg);
                 }
             });
-            // Clear the text input after sending the message
             setMessageText("");
         }
     };
 
-    // Function to scroll to the end of the chat
+    const sendRecommendation = (recommendation) => {
+        let newMessages = [...messages];
+        newMessages.push({
+            role: "user",
+            content: recommendation,
+        });
+        setMessages([...newMessages]);
+        updateScrollView();
+        setLoading(true);
+        apiCall(recommendation, newMessages).then((res) => {
+            if (res?.success) {
+                setLoading(false);
+                setMessages([...res.data]);
+                updateScrollView();
+            } else {
+                Alert.alert("Error", res.msg);
+            }
+        });
+        setRecommendationsVisible(false);
+    };
+
     const updateScrollView = () => {
         setTimeout(() => {
             ScrollViewRef?.current?.scrollToEnd({ animated: true });
         });
     };
 
-    // Function to render the message bubbles
     const renderMessage = (message, index) => {
         if (message.role === "user") {
             return (
-                <View className="bg-orange-300 py-3 px-4 rounded-2xl mb-2 self-end">
-                    <Text>{message.content}</Text>
+                <View
+                    key={index}
+                    className="bg-orange-300 py-3 px-4 rounded-2xl mb-3 ml-10 self-end"
+                >
+                    <Text className="text-base">{message.content}</Text>
                 </View>
             );
         } else if (message.role === "assistant") {
             if (message.content.startsWith("https://")) {
                 return (
-                    <View className="bg-gray-800 py-3 px-4 rounded-2xl mb-2 self-start">
+                    <View
+                        key={index}
+                        className="bg-[#1b1b1b] py-3 px-4 rounded-2xl mb-3 mr-10 self-start"
+                    >
                         <Image
                             source={{ uri: message.content }}
                             className="w-full h-40 rounded-2xl"
@@ -85,12 +106,41 @@ const ChatScreen = ({ navigation, route }) => {
                 );
             } else {
                 return (
-                    <View className="bg-gray-800 py-3 px-4 rounded-2xl mb-2 self-start">
-                        <Text className="text-white">{message.content}</Text>
+                    <View
+                        key={index}
+                        className="bg-[#1b1b1b] py-4 px-6 rounded-3xl mb-3 mr-10 self-start"
+                    >
+                        <Text className="text-white text-base">{message.content}</Text>
                     </View>
                 );
             }
         }
+    };
+
+    const renderRecommendations = () => {
+        if (!recommendationsVisible) {
+            return null;
+        }
+
+        return (
+            <View className="p-4 mb-4">
+                <Text className="text-white text-2xl font-bold mb-2">You can ask:</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    {character.recommendations.map((recommendation, index) => (
+                        <TouchableOpacity
+                            key={index}
+                            onPress={() => sendRecommendation(recommendation)}
+                            className="p-4 w-36 mr-3 rounded-xl"
+                            style={{
+                                backgroundColor: "rgba(0, 0, 0, 0.5)",
+                            }}
+                        >
+                            <Text className="text-white">{recommendation}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
+            </View>
+        );
     };
 
     return (
@@ -105,7 +155,7 @@ const ChatScreen = ({ navigation, route }) => {
 
                 <ScrollView ref={ScrollViewRef} className="flex-1 px-5 py-3">
                     {messages.map((message, i) => (
-                        <View key={i}>{renderMessage(message)}</View>
+                        <View key={i}>{renderMessage(message, i)}</View>
                     ))}
 
                     {loading && (
@@ -114,6 +164,8 @@ const ChatScreen = ({ navigation, route }) => {
                         </View>
                     )}
                 </ScrollView>
+
+                {renderRecommendations()}
 
                 <MyChatInputBar
                     messageText={messageText}

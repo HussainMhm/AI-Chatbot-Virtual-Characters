@@ -5,7 +5,13 @@ import MyListImage from "./MyListImage";
 
 const { width } = Dimensions.get("window");
 
-const MyCharactersList = ({ listType, categoryName, characters, onHeartPress }) => {
+const MyCharactersList = ({
+    listType,
+    categoryName,
+    characters,
+    onHeartPress,
+    onAllCharactersPress,
+}) => {
     let imageWidth, imageHeight;
 
     // Different aspect ratios for each list type
@@ -33,12 +39,15 @@ const MyCharactersList = ({ listType, categoryName, characters, onHeartPress }) 
             {/* Category title */}
             <View className="flex-row justify-between mb-4">
                 {/* Category title */}
-                <Text className="text-2xl font-bold">{categoryName}</Text>
+                <Text className="text-white text-2xl font-bold">{categoryName}</Text>
 
                 {/* See all */}
-                <TouchableOpacity className="flex-row items-center space-x-1">
-                    <Text className="text-lg font-bold">All</Text>
-                    <Ionicons name="chevron-forward" size={20} />
+                <TouchableOpacity
+                    className="flex-row items-center space-x-1"
+                    onPress={onAllCharactersPress}
+                >
+                    <Text className="text-white text-lg font-bold">All</Text>
+                    <Ionicons name="chevron-forward" size={20} color={"white"} />
                 </TouchableOpacity>
             </View>
 

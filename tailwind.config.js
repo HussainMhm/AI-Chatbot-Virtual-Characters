@@ -2,11 +2,18 @@
 module.exports = {
     content: [
         "./App.{js,jsx,ts,tsx}",
+        "./Navigation.{js,jsx,ts,tsx}",
         "./components/**/*.{js,jsx,ts,tsx}",
         "./screens/**/*.{js,jsx,ts,tsx}",
     ],
     theme: {
-        extend: {},
+        extend: {
+            colors: {
+                chatbot: {
+                    dark: "#0f0f0f",
+                },
+            },
+        },
     },
     plugins: [],
 };

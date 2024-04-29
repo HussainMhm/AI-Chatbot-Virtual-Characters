@@ -4,7 +4,7 @@ import MyHeader from "../components/MyHeader";
 const FeedScreen = () => {
     return (
         <SafeAreaView
-            className={`flex-1 bg-white`}
+            className={`flex-1 bg-chatbot-dark`}
             style={{ paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0 }}
         >
             <MyHeader title="Feed" icon={"newspaper"} />

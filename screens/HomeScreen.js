@@ -30,6 +30,7 @@ const HomeScreen = ({ navigation }) => {
         2: "mini",
     };
 
+    // Combine characters with categories
     const getCharactersWithCategories = (characters, categories) => {
         // Create a copy of the categories array to avoid mutating the original data
         const combinedCategories = categories.map((category) => ({
@@ -45,6 +46,7 @@ const HomeScreen = ({ navigation }) => {
         return combinedCategories; // Return the combined list of categories with characters
     };
 
+    // Filter characters by category ID
     const filterCharactersByCategoryId = (categoryId = -1) => {
         // If the category ID is -1 (representing 'All'), return all categories with their characters
         if (categoryId === -1) {
@@ -52,11 +54,10 @@ const HomeScreen = ({ navigation }) => {
         }
 
         // Return only the category that matches the given category ID
-        return categoryWithCharacters.filter(
-            (cat) => cat.id === categoryId
-        );
+        return categoryWithCharacters.filter((cat) => cat.id === categoryId);
     };
 
+    // Category press handler
     const handleCategoryPress = (category) => {
         const categoryId = category ? category.id : -1; // Handle cases where 'category' is undefined
         setActiveCategory(categoryId);
@@ -71,15 +72,20 @@ const HomeScreen = ({ navigation }) => {
     };
 
     useEffect(() => {
+        // Initialize the state with characters combined with categories
         const initialCharacters = getCharactersWithCategories(characters, categories);
         console.log(initialCharacters);
-        setCategoryWithCharacters(initialCharacters); // Initialize the state with characters combined with categories
-        setFilterdCategoryWithCharacters(initialCharacters)
+
+        // Initialize the state with characters combined with categories
+        setCategoryWithCharacters(initialCharacters);
+
+        // Initialize the filtered state with all characters
+        setFilterdCategoryWithCharacters(initialCharacters);
     }, [characters, categories]); // Dependency on characters and categories
 
     return (
         <SafeAreaView
-            className={`flex-1 bg-white`}
+            className={`flex-1 bg-chatbot-dark`}
             style={{ paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0 }}
         >
             {/* Header component */}
@@ -91,12 +97,14 @@ const HomeScreen = ({ navigation }) => {
                     {/* 'All' Category */}
                     <TouchableOpacity
                         onPress={() => handleCategoryPress(null)} // Handle 'All' category press
-                        className={`px-4 py-2 mx-2 rounded-lg ${activeCategory === -1 ? "bg-blue-500" : "bg-gray-300"
-                            }`}
+                        className={`px-6 py-3 mx-2 rounded-2xl ${
+                            activeCategory === -1 ? "bg-white" : "bg-[#222222]"
+                        }`}
                     >
                         <Text
-                            className={`text-base font-medium ${activeCategory === -1 ? "text-white" : "text-gray-600"
-                                }`}
+                            className={`text-base font-semibold ${
+                                activeCategory === -1 ? "text-black" : "text-white"
+                            }`}
                         >
                             All
                         </Text>
@@ -107,12 +115,14 @@ const HomeScreen = ({ navigation }) => {
                         <TouchableOpacity
                             key={index}
                             onPress={() => handleCategoryPress(category)}
-                            className={`px-4 py-2 mx-2 rounded-lg ${activeCategory === category.id ? "bg-blue-500" : "bg-gray-300"
-                                }`}
+                            className={`px-4 py-3 mx-2 rounded-2xl ${
+                                activeCategory === category.id ? "bg-white" : "bg-[#222222]"
+                            }`}
                         >
                             <Text
-                                className={`text-base font-medium ${activeCategory === category.id ? "text-white" : "text-gray-600"
-                                    }`}
+                                className={`text-base font-semibold ${
+                                    activeCategory === category.id ? "text-black" : "text-white"
+                                }`}
                             >
                                 {category.name}
                             </Text>
@@ -130,6 +140,7 @@ const HomeScreen = ({ navigation }) => {
                         categoryName={category.name}
                         characters={category.characters}
                         onHeartPress={handleHeartPress}
+                        onAllCharactersPress={() => handleCategoryPress(category)}
                     />
                 ))}
             </ScrollView>
