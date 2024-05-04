@@ -8,8 +8,9 @@ import HomeScreen from "./screens/HomeScreen";
 import ChatScreen from "./screens/ChatScreen";
 import FeedScreen from "./screens/FeedScreen";
 import ProfileScreen from "./screens/ProfileScreen";
-import NewCharacter from "./screens/NewCharacter";
+import CharacterListScreen from "./screens/CharacterListScreen";
 import ChatListScreen from "./screens/ChatListScreen";
+import CharacterBuilder from "./screens/CharacterBuilder";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -88,7 +89,7 @@ const BottomTabNavigator = () => {
             />
             <Tab.Screen
                 name="NewCharacter"
-                component={NewCharacter}
+                component={CharacterListScreen}
                 options={{
                     tabBarLabel: "Create",
                     tabBarIconName: "add-circle",
@@ -117,6 +118,7 @@ const Navigation = () => {
                     component={BottomTabNavigator}
                     options={{ headerShown: false }}
                 />
+                <Stack.Screen name="CreateCharacter" component={CharacterBuilder} />
                 <Stack.Screen name="Chat" component={ChatScreen} options={{ headerShown: false }} />
             </Stack.Navigator>
         </NavigationContainer>
