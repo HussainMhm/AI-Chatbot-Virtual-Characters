@@ -21,6 +21,9 @@ import countriesData from "../data/countries";
 import categoriesData from "../data/categories";
 import MyProgressIndicator from "../components/MyProgressIndicator";
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from "@react-navigation/native";
+
 const CharacterBuilder = ({ navigation }) => {
     // Step state and handler
     const [step, setStep] = useState(1);
@@ -34,7 +37,7 @@ const CharacterBuilder = ({ navigation }) => {
         if (step > 1) {
             setStep((prevStep) => prevStep - 1);
         } else {
-            navigation.goBack();
+            navigation.navigate("CharacterList", { refreshCharacters: false });
         }
     };
 
@@ -105,7 +108,7 @@ const CharacterBuilder = ({ navigation }) => {
         Travel: "✈️",
     };
 
-    const handleCreateCharacter = () => {
+    const handleCreateCharacter = async () => {
         // Logic to save the character
         const newCharacter = {
             name: characterName,
@@ -118,11 +121,40 @@ const CharacterBuilder = ({ navigation }) => {
             firstMessage: characterFirstMessage,
             category: characterCategory,
         };
-        console.log("Character created:", newCharacter);
-
+        await saveNewCharcter(newCharacter);
+        
         // Navigate back or show a success message
-        navigation.goBack();
+        navigation.navigate("CharacterList", { refreshCharacters: true });
     };
+
+    useFocusEffect(
+        React.useCallback(() => {
+            setStep(1)
+        }, [])
+    );
+    
+
+    const saveNewCharcter = async (newCharacter) => {
+        try {
+            const value = await AsyncStorage.getItem('new-characters');
+    
+            let newCharacters = [];
+            
+            if (value != null) {
+                newCharacters = JSON.parse(value);
+            }
+
+            if (newCharacter) {
+                newCharacters.push(newCharacter);
+            }
+
+            const jsonValue = JSON.stringify(newCharacters);
+            await AsyncStorage.setItem('new-characters', jsonValue);
+        } catch (e) {
+            console.log(`Failed to save new character`);
+        }
+    };
+    
 
     const renderTitleAndDescription = (title, description) => {
         return (

@@ -120,6 +120,8 @@ const Navigation = () => {
                 />
                 <Stack.Screen name="CreateCharacter" component={CharacterBuilder} />
                 <Stack.Screen name="Chat" component={ChatScreen} options={{ headerShown: false }} />
+                <Stack.Screen name="CharacterList" component={CharacterListScreen} options={{ headerShown: false }} />
+
             </Stack.Navigator>
         </NavigationContainer>
     );

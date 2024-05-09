@@ -145,7 +145,9 @@ const ChatScreen = ({ navigation, route }) => {
     };
 
     return (
-        <ImageBackground source={getImage(character.id)} className="flex-1" resizeMode="cover">
+        <ImageBackground
+            source={character.id === -1 ? { uri: character?.image_path } : getImage(character.id)}
+            className="flex-1" resizeMode="cover">
             <SafeAreaView
                 style={{
                     flex: 1,
