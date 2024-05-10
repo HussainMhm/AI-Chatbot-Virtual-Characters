@@ -4,6 +4,7 @@ import MyHeader from "../components/MyHeader";
 import React, { useEffect, useState } from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MyChatListItem from "../components/MyChatListItem";
+import { useFocusEffect } from "@react-navigation/native";
 
 const CharacterListScreen = ({ navigation, route }) => {
     const [newCharacters, setNewCharacters] = useState([]);
@@ -12,18 +13,19 @@ const CharacterListScreen = ({ navigation, route }) => {
         getNewCharacters();
     }, [])
 
-    useEffect(() => {
-        if (route.params?.refreshCharacters) {
+    useFocusEffect(
+        React.useCallback(() => {
             getNewCharacters();
-        }
-    }, [route.params?.refreshCharacters]);
+            getChatsHistory();
+        }, [])
+    );
 
     const getNewCharacters = async () => {
         try {
             const value = await AsyncStorage.getItem('new-characters');
-            setNewCharacters(JSON.parse(value))
+            setNewCharacters(value ? JSON.parse(value) : [])
         } catch (e) {
-            console.log(`failed to get new characters`);
+            console.log(`failed to get new characters ${e}`);
         }
     }
 
@@ -31,6 +33,16 @@ const CharacterListScreen = ({ navigation, route }) => {
         navigation.navigate("CreateCharacter");
     };
 
+    const getChatsHistory = async () => {
+        try {
+            const value = await AsyncStorage.getItem('chats-history');
+            const history = JSON.parse(value);
+            console.log(history);
+            setChatsHistory(Array.isArray(history) ? history : []);
+        } catch (e) {
+            console.log(`Failed to get chat history:`, e);
+        }
+    }
 
     return (
         <SafeAreaView
@@ -39,7 +51,7 @@ const CharacterListScreen = ({ navigation, route }) => {
         >
             <MyHeader title="Characters" icon={"person-add"} />
             {
-                newCharacters ? (
+                newCharacters.length > 0 ? (
                     <ScrollView
                         className="flex-1"
                         keyboardDismissMode="on-drag"
@@ -58,7 +70,6 @@ const CharacterListScreen = ({ navigation, route }) => {
                     </View>
                 )
             }
-
 
             <TouchableOpacity
                 className="bg-white m-4 p-4 rounded-2xl items-center justify-center"

@@ -20,7 +20,6 @@ export const apiCall = async (prompt, messages) => {
                 content: `Is this an art-related request or a chat? ${prompt} . Reply 'art' for art-related, 'chat' for chatting.`
             }]
         })
-        console.log(res.data?.choices[0]?.message?.content);
         const isArt = res.data?.choices[0]?.message?.content.toLowerCase().includes('art');
         systemPrompt = `
         As an AI character, you are endowed with a specific set of characteristics and a defined historical context:

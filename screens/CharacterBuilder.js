@@ -37,7 +37,7 @@ const CharacterBuilder = ({ navigation }) => {
         if (step > 1) {
             setStep((prevStep) => prevStep - 1);
         } else {
-            navigation.navigate("CharacterList", { refreshCharacters: false });
+            navigation.goBack();
         }
     };
 
@@ -124,7 +124,7 @@ const CharacterBuilder = ({ navigation }) => {
         await saveNewCharcter(newCharacter);
         
         // Navigate back or show a success message
-        navigation.navigate("CharacterList", { refreshCharacters: true });
+        navigation.goBack();
     };
 
     useFocusEffect(
@@ -132,6 +132,24 @@ const CharacterBuilder = ({ navigation }) => {
             setStep(1)
         }, [])
     );
+
+    const convertCharacterToSystemFormat = (character) => {
+
+        const { age, hometown, interests, name, description, firstMessage, photo } = character;
+
+        const systemContent = `${description} \n- Age: ${age} \n- Hometown: ${hometown} \n- Interests: ${interests.join(", ")}.`;
+
+        return {
+            id: -1,
+            name: name,
+            category_id: -1,
+            system_content: systemContent,
+            assistant_content: firstMessage,
+            image_path: photo ?? "https://randomuser.me/api/portraits/med/men/1.jpg",
+            recommendations: []
+        };
+    };
+
     
 
     const saveNewCharcter = async (newCharacter) => {
@@ -142,16 +160,21 @@ const CharacterBuilder = ({ navigation }) => {
             
             if (value != null) {
                 newCharacters = JSON.parse(value);
+                
+                // If the value is not an array, make it an array
+                if (!Array.isArray(newCharacters)) {
+                    newCharacters = [newCharacters];
+                }
             }
 
             if (newCharacter) {
-                newCharacters.push(newCharacter);
+                newCharacters.push(convertCharacterToSystemFormat(newCharacter));
             }
 
             const jsonValue = JSON.stringify(newCharacters);
             await AsyncStorage.setItem('new-characters', jsonValue);
         } catch (e) {
-            console.log(`Failed to save new character`);
+            console.log(`Failed to save new character. ${e}`);
         }
     };
     

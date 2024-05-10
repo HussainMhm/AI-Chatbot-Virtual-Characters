@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     View,
     Text,
@@ -7,11 +7,18 @@ import {
     StatusBar,
     Image,
     TouchableOpacity,
+    ScrollView,
 } from "react-native";
 import MyHeader from "../components/MyHeader";
+import { useFocusEffect } from "@react-navigation/native";
+import MyChatListItem from "../components/MyChatListItem";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ProfileScreen = () => {
     const [activeTab, setActiveTab] = useState("savedChats");
+    const [favoriteCharacters, setFavoriteCharacters] = useState([]);
+    const [chatsHistory, setChatsHistory] = useState([]);
+    const [newCharacters, setNewCharacters] = useState([]);
 
     // Tabs data
     const tabs = [
@@ -20,26 +27,122 @@ const ProfileScreen = () => {
         { label: "Favorites", value: "favorites" },
     ];
 
+
+    useEffect(() => {
+        getFavoriteCharacters();
+    }, []);
+
+    useFocusEffect(
+        React.useCallback(() => {
+            getChatsHistory();
+            getNewCharacters();
+            getFavoriteCharacters();
+        }, [])
+    );
+
+    const getChatsHistory = async () => {
+        try {
+            const value = await AsyncStorage.getItem('chats-history');
+            console.log(value);
+            const history = value ? JSON.parse(value) : [];
+            setChatsHistory(Array.isArray(history) ? history : []);
+        } catch (e) {
+            console.log(`Failed to get chat history:`, e);
+        }
+    }
+
+    const getNewCharacters = async () => {
+        try {
+            const value = await AsyncStorage.getItem('new-characters');
+            const characters = value ? JSON.parse(value) : [];
+            setNewCharacters(Array.isArray(characters) ? characters : []);
+        } catch (e) {
+            console.log(`failed to get new characters ${e}`);
+        }
+    }
+
+    const getFavoriteCharacters = async () => {
+        try {
+            const value = await AsyncStorage.getItem('favorite-characters');
+            const characters = JSON.parse(value);
+            console.log("favorites: ", characters);
+            setFavoriteCharacters(Array.isArray(characters) ? characters : []);
+        } catch (e) {
+            console.log(`Failed to get favorite characters:`, e);
+        }
+    }
+
     // Function to render content based on active tab
     const renderContent = () => {
         switch (activeTab) {
             case "savedChats":
                 return (
-                    <View className="flex-1 justify-center items-center">
-                        <Text className="text-gray-400 text-lg">No archived chat yet!</Text>
-                    </View>
+                    <ScrollView
+                        className="flex-1 mt-4"
+                        keyboardDismissMode="on-drag"
+                        contentContainerStyle={{ flexGrow: 1 }}
+                    >
+                        {
+                            chatsHistory.length > 0 ? (
+                                chatsHistory.map((chatHistory, index) => (
+                                    <MyChatListItem
+                                        key={index}
+                                        character={chatHistory?.chat}
+                                    />
+                                ))
+                            ) : (
+                                <View className="flex-1 items-center justify-center">
+                                    <Text className="text-gray-400 text-lg">No archived chat yet!</Text>
+                                </View>
+                            )
+                        }
+                    </ScrollView>
                 );
             case "myCharacters":
                 return (
-                    <View className="flex-1 justify-center items-center">
-                        <Text className="text-gray-400 text-lg">No characters created yet!</Text>
-                    </View>
+                    <ScrollView
+                        className="flex-1 mt-4"
+                        keyboardDismissMode="on-drag"
+                        contentContainerStyle={{ flexGrow: 1 }}
+                    >
+                        {
+                            newCharacters.length > 0 ? (
+                                newCharacters.map((character, index) => (
+                                    <MyChatListItem
+                                        key={index}
+                                        character={character}
+                                    />
+                                ))
+                            ) : (
+                                <View className="flex-1 items-center justify-center">
+                                    <Text className="text-gray-400 text-lg">No characters created yet!</Text>
+                                </View>
+                            )
+                        }
+                    </ScrollView>
                 );
             case "favorites":
                 return (
-                    <View className="flex-1 justify-center items-center">
-                        <Text className="text-gray-400 text-lg">No favorited characters yet!</Text>
-                    </View>
+                    <ScrollView
+                        className="flex-1 mt-4"
+                        keyboardDismissMode="on-drag"
+                        contentContainerStyle={{ flexGrow: 1 }}
+                    >
+                        {
+                            favoriteCharacters.length > 0 ? (
+                                favoriteCharacters.map((character, index) => (
+                                    <MyChatListItem
+                                        key={index}
+                                        character={character}
+                                    />
+                                ))
+                            ) : (
+                                <View className="flex-1 items-center justify-center">
+                                    <Text className="text-gray-400 text-lg">No favorited characters yet!</Text>
+                                </View>
+                            )
+                        }
+                    </ScrollView>
                 );
             default:
                 return null;

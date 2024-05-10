@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
     View,
     Text,
@@ -18,6 +18,7 @@ import MyChatInputBar from "../components/MyChatInputBar";
 
 import { apiCall } from "../api/openAi";
 import { getImage } from "../helpers/index";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ChatScreen = ({ navigation, route }) => {
     const { character } = route.params;
@@ -29,7 +30,47 @@ const ChatScreen = ({ navigation, route }) => {
     const [messageText, setMessageText] = useState("");
     const [loading, setLoading] = useState(false);
     const [recommendationsVisible, setRecommendationsVisible] = useState(true);
+    const [saveChat, setSaveChat] = useState(false);
     const ScrollViewRef = useRef();
+
+    useEffect(()=>{
+        if (character?.messages){
+            setMessages(character?.messages)
+        }
+    }, [])
+
+    useEffect(() => {
+        const saveChatMessages = async () => {
+            try {
+                const value = await AsyncStorage.getItem('chats-history');
+                let chatsHistory = value ? JSON.parse(value) : [];
+                
+                // Find index of the existing character chat, if it exists
+                const index = chatsHistory.findIndex(chat => chat?.chat?.id === character.id);
+
+
+                if (index !== -1) {
+                    // Replace existing chat messages for this character
+                    chatsHistory[index].chat.messages = messages;
+                } else {
+                    // Push new chat entry if character not found
+                    chatsHistory.push({
+                        chat: {
+                            ...character,
+                            messages: messages
+                        },
+                    });
+                }
+                await AsyncStorage.setItem('chats-history', JSON.stringify(chatsHistory));
+            } catch (error) {
+                console.error('Error saving chats history:', error);
+            }
+        };
+
+        return () => {
+            saveChatMessages();
+        };
+    }, [messages]);
 
     const sendMessage = () => {
         if (messageText.trim().length > 0) {

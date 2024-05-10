@@ -14,6 +14,7 @@ import MyCharactersList from "../components/MyCharactersList";
 
 import categoriesData from "../data/categories.json";
 import charactersData from "../data/characters.json";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const HomeScreen = ({ navigation }) => {
     const [categories] = useState(categoriesData.categories);
@@ -69,12 +70,42 @@ const HomeScreen = ({ navigation }) => {
     // Heart icon press handler
     const handleHeartPress = (character) => {
         // Handle heart icon press
+        saveCharacterToFavorites(character)
+    };
+
+    const saveCharacterToFavorites = async (character) => {
+        try {
+            const value = await AsyncStorage.getItem('favorite-characters');
+
+            let favoriteCharacters = [];
+
+            if (value != null) {
+                favoriteCharacters = JSON.parse(value);
+                favoriteCharacters = Array.isArray(favoriteCharacters) ? favoriteCharacters : [];
+            }
+
+            // Find index of the existing favorite character, if it exists
+            const index = favoriteCharacters.findIndex(c => c?.id === character.id);
+            console.log(index);
+            if (index !== -1) {
+                // Remove the character from the favorites
+                favoriteCharacters.splice(index, 1)
+
+            } else {
+                // Add the character to the favorites
+                favoriteCharacters.push(character);
+            }
+
+            const jsonValue = JSON.stringify(favoriteCharacters);
+            await AsyncStorage.setItem('favorite-characters', jsonValue);
+        } catch (e) {
+            console.log(`Failed to save favorite characters. ${e}`);
+        }
     };
 
     useEffect(() => {
         // Initialize the state with characters combined with categories
         const initialCharacters = getCharactersWithCategories(characters, categories);
-        console.log(initialCharacters);
 
         // Initialize the state with characters combined with categories
         setCategoryWithCharacters(initialCharacters);
@@ -97,14 +128,12 @@ const HomeScreen = ({ navigation }) => {
                     {/* 'All' Category */}
                     <TouchableOpacity
                         onPress={() => handleCategoryPress(null)} // Handle 'All' category press
-                        className={`px-6 py-3 mx-2 rounded-2xl ${
-                            activeCategory === -1 ? "bg-white" : "bg-[#222222]"
-                        }`}
+                        className={`px-6 py-3 mx-2 rounded-2xl ${activeCategory === -1 ? "bg-white" : "bg-[#222222]"
+                            }`}
                     >
                         <Text
-                            className={`text-base font-semibold ${
-                                activeCategory === -1 ? "text-black" : "text-white"
-                            }`}
+                            className={`text-base font-semibold ${activeCategory === -1 ? "text-black" : "text-white"
+                                }`}
                         >
                             All
                         </Text>
@@ -115,14 +144,12 @@ const HomeScreen = ({ navigation }) => {
                         <TouchableOpacity
                             key={index}
                             onPress={() => handleCategoryPress(category)}
-                            className={`px-4 py-3 mx-2 rounded-2xl ${
-                                activeCategory === category.id ? "bg-white" : "bg-[#222222]"
-                            }`}
+                            className={`px-4 py-3 mx-2 rounded-2xl ${activeCategory === category.id ? "bg-white" : "bg-[#222222]"
+                                }`}
                         >
                             <Text
-                                className={`text-base font-semibold ${
-                                    activeCategory === category.id ? "text-black" : "text-white"
-                                }`}
+                                className={`text-base font-semibold ${activeCategory === category.id ? "text-black" : "text-white"
+                                    }`}
                             >
                                 {category.name}
                             </Text>
