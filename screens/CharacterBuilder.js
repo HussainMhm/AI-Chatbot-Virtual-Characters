@@ -21,7 +21,7 @@ import countriesData from "../data/countries";
 import categoriesData from "../data/categories";
 import MyProgressIndicator from "../components/MyProgressIndicator";
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 
 const CharacterBuilder = ({ navigation }) => {
@@ -122,22 +122,23 @@ const CharacterBuilder = ({ navigation }) => {
             category: characterCategory,
         };
         await saveNewCharcter(newCharacter);
-        
+
         // Navigate back or show a success message
         navigation.goBack();
     };
 
     useFocusEffect(
         React.useCallback(() => {
-            setStep(1)
+            setStep(1);
         }, [])
     );
 
     const convertCharacterToSystemFormat = (character) => {
-
         const { age, hometown, interests, name, description, firstMessage, photo } = character;
 
-        const systemContent = `${description} \n- Age: ${age} \n- Hometown: ${hometown} \n- Interests: ${interests.join(", ")}.`;
+        const systemContent = `${description} \n- Age: ${age} \n- Hometown: ${hometown} \n- Interests: ${interests.join(
+            ", "
+        )}.`;
 
         return {
             id: -1,
@@ -146,21 +147,19 @@ const CharacterBuilder = ({ navigation }) => {
             system_content: systemContent,
             assistant_content: firstMessage,
             image_path: photo ?? "https://randomuser.me/api/portraits/med/men/1.jpg",
-            recommendations: []
+            recommendations: [],
         };
     };
 
-    
-
     const saveNewCharcter = async (newCharacter) => {
         try {
-            const value = await AsyncStorage.getItem('new-characters');
-    
+            const value = await AsyncStorage.getItem("new-characters");
+
             let newCharacters = [];
-            
+
             if (value != null) {
                 newCharacters = JSON.parse(value);
-                
+
                 // If the value is not an array, make it an array
                 if (!Array.isArray(newCharacters)) {
                     newCharacters = [newCharacters];
@@ -172,12 +171,11 @@ const CharacterBuilder = ({ navigation }) => {
             }
 
             const jsonValue = JSON.stringify(newCharacters);
-            await AsyncStorage.setItem('new-characters', jsonValue);
+            await AsyncStorage.setItem("new-characters", jsonValue);
         } catch (e) {
             console.log(`Failed to save new character. ${e}`);
         }
     };
-    
 
     const renderTitleAndDescription = (title, description) => {
         return (
@@ -588,57 +586,6 @@ const CharacterBuilder = ({ navigation }) => {
             </TouchableOpacity>
         </SafeAreaView>
     );
-};
-
-const styles = {
-    button: {
-        backgroundColor: "orange",
-        padding: 15,
-        alignItems: "center",
-    },
-    buttonText: {
-        color: "white",
-        fontWeight: "bold",
-    },
-    row: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        marginBottom: 20,
-    },
-    halfInput: {
-        flex: 1,
-        marginRight: 10,
-    },
-    selectedButton: {
-        backgroundColor: "blue",
-    },
-    imagePickerContainer: {
-        marginBottom: 20,
-    },
-    imagePickerText: {
-        marginBottom: 10,
-        color: "blue",
-    },
-    characterImage: {
-        width: 200,
-        height: 200,
-        resizeMode: "cover",
-        marginBottom: 10,
-    },
-    interestsContainer: {
-        marginBottom: 20,
-    },
-    interestButton: {
-        backgroundColor: "lightgray",
-        padding: 10,
-        borderRadius: 5,
-        marginBottom: 10,
-    },
-    sectionTitle: {
-        fontSize: 16,
-        fontWeight: "bold",
-        marginBottom: 10,
-    },
 };
 
 export default CharacterBuilder;
