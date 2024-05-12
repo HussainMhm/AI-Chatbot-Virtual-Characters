@@ -11,6 +11,7 @@ import ProfileScreen from "./screens/ProfileScreen";
 import CharacterListScreen from "./screens/CharacterListScreen";
 import ChatListScreen from "./screens/ChatListScreen";
 import CharacterBuilder from "./screens/CharacterBuilder";
+import AuthenticationScreen from "./screens/AuthenticationScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -121,7 +122,7 @@ const Navigation = () => {
                 <Stack.Screen name="CreateCharacter" component={CharacterBuilder} />
                 <Stack.Screen name="Chat" component={ChatScreen} options={{ headerShown: false }} />
                 <Stack.Screen name="CharacterList" component={CharacterListScreen} />
-
+                <Stack.Screen name="Authentication" component={AuthenticationScreen} />
             </Stack.Navigator>
         </NavigationContainer>
     );

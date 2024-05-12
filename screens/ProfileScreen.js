@@ -12,7 +12,8 @@ import {
 import MyHeader from "../components/MyHeader";
 import { useFocusEffect } from "@react-navigation/native";
 import MyChatListItem from "../components/MyChatListItem";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import MyProfileHeader from "../components/MyProfileHeader";
 
 const ProfileScreen = () => {
     const [activeTab, setActiveTab] = useState("savedChats");
@@ -26,7 +27,6 @@ const ProfileScreen = () => {
         { label: "My Characters", value: "myCharacters" },
         { label: "Favorites", value: "favorites" },
     ];
-
 
     useEffect(() => {
         getFavoriteCharacters();
@@ -42,35 +42,35 @@ const ProfileScreen = () => {
 
     const getChatsHistory = async () => {
         try {
-            const value = await AsyncStorage.getItem('chats-history');
+            const value = await AsyncStorage.getItem("chats-history");
             console.log(value);
             const history = value ? JSON.parse(value) : [];
             setChatsHistory(Array.isArray(history) ? history : []);
         } catch (e) {
             console.log(`Failed to get chat history:`, e);
         }
-    }
+    };
 
     const getNewCharacters = async () => {
         try {
-            const value = await AsyncStorage.getItem('new-characters');
+            const value = await AsyncStorage.getItem("new-characters");
             const characters = value ? JSON.parse(value) : [];
             setNewCharacters(Array.isArray(characters) ? characters : []);
         } catch (e) {
             console.log(`failed to get new characters ${e}`);
         }
-    }
+    };
 
     const getFavoriteCharacters = async () => {
         try {
-            const value = await AsyncStorage.getItem('favorite-characters');
+            const value = await AsyncStorage.getItem("favorite-characters");
             const characters = JSON.parse(value);
             console.log("favorites: ", characters);
             setFavoriteCharacters(Array.isArray(characters) ? characters : []);
         } catch (e) {
             console.log(`Failed to get favorite characters:`, e);
         }
-    }
+    };
 
     // Function to render content based on active tab
     const renderContent = () => {
@@ -82,20 +82,15 @@ const ProfileScreen = () => {
                         keyboardDismissMode="on-drag"
                         contentContainerStyle={{ flexGrow: 1 }}
                     >
-                        {
-                            chatsHistory.length > 0 ? (
-                                chatsHistory.map((chatHistory, index) => (
-                                    <MyChatListItem
-                                        key={index}
-                                        character={chatHistory?.chat}
-                                    />
-                                ))
-                            ) : (
-                                <View className="flex-1 items-center justify-center">
-                                    <Text className="text-gray-400 text-lg">No archived chat yet!</Text>
-                                </View>
-                            )
-                        }
+                        {chatsHistory.length > 0 ? (
+                            chatsHistory.map((chatHistory, index) => (
+                                <MyChatListItem key={index} character={chatHistory?.chat} />
+                            ))
+                        ) : (
+                            <View className="flex-1 items-center justify-center">
+                                <Text className="text-gray-400 text-lg">No archived chat yet!</Text>
+                            </View>
+                        )}
                     </ScrollView>
                 );
             case "myCharacters":
@@ -105,20 +100,17 @@ const ProfileScreen = () => {
                         keyboardDismissMode="on-drag"
                         contentContainerStyle={{ flexGrow: 1 }}
                     >
-                        {
-                            newCharacters.length > 0 ? (
-                                newCharacters.map((character, index) => (
-                                    <MyChatListItem
-                                        key={index}
-                                        character={character}
-                                    />
-                                ))
-                            ) : (
-                                <View className="flex-1 items-center justify-center">
-                                    <Text className="text-gray-400 text-lg">No characters created yet!</Text>
-                                </View>
-                            )
-                        }
+                        {newCharacters.length > 0 ? (
+                            newCharacters.map((character, index) => (
+                                <MyChatListItem key={index} character={character} />
+                            ))
+                        ) : (
+                            <View className="flex-1 items-center justify-center">
+                                <Text className="text-gray-400 text-lg">
+                                    No characters created yet!
+                                </Text>
+                            </View>
+                        )}
                     </ScrollView>
                 );
             case "favorites":
@@ -128,20 +120,17 @@ const ProfileScreen = () => {
                         keyboardDismissMode="on-drag"
                         contentContainerStyle={{ flexGrow: 1 }}
                     >
-                        {
-                            favoriteCharacters.length > 0 ? (
-                                favoriteCharacters.map((character, index) => (
-                                    <MyChatListItem
-                                        key={index}
-                                        character={character}
-                                    />
-                                ))
-                            ) : (
-                                <View className="flex-1 items-center justify-center">
-                                    <Text className="text-gray-400 text-lg">No favorited characters yet!</Text>
-                                </View>
-                            )
-                        }
+                        {favoriteCharacters.length > 0 ? (
+                            favoriteCharacters.map((character, index) => (
+                                <MyChatListItem key={index} character={character} />
+                            ))
+                        ) : (
+                            <View className="flex-1 items-center justify-center">
+                                <Text className="text-gray-400 text-lg">
+                                    No favorited characters yet!
+                                </Text>
+                            </View>
+                        )}
                     </ScrollView>
                 );
             default:
@@ -157,7 +146,7 @@ const ProfileScreen = () => {
             }}
             className="bg-chatbot-dark"
         >
-            <MyHeader title="Profile" icon={"person"} />
+            <MyProfileHeader title="Profile" icon={"person"} />
 
             {/* Profile information */}
             <View className="p-4 flex-row items-center">
