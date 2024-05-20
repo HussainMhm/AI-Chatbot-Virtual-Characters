@@ -12,6 +12,7 @@ import CharacterListScreen from "./screens/CharacterListScreen";
 import ChatListScreen from "./screens/ChatListScreen";
 import CharacterBuilder from "./screens/CharacterBuilder";
 import AuthenticationScreen from "./screens/AuthenticationScreen";
+import OnBoardingScreen from "./screens/OnBoardingScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -114,6 +115,7 @@ const Navigation = () => {
     return (
         <NavigationContainer>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="OnBoarding" component={OnBoardingScreen} />
                 <Stack.Screen
                     name="Main"
                     component={BottomTabNavigator}
