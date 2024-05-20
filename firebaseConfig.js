@@ -4,12 +4,12 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-    apiKey: "xxxxxxxxxxxxxxxxxxxxxxxx",
-    authDomain: "xxxxxxxxxxxxxxxxxxxxxxxx",
-    projectId: "xxxxxxxxxxxxxxxxxxxxxxxx",
-    storageBucket: "xxxxxxxxxxxxxxxxxxxxxxxx",
-    messagingSenderId: "xxxxxxxxxxxxxxxxxxxxxxxx",
-    appId: "xxxxxxxxxxxxxxxxxxxxxxxx",
+    apiKey: "AIzaSyAHoCaYZ8tWanoE0YMY1yWQy6zc5bxSDIg",
+    authDomain: "ai-chatbot-42003.firebaseapp.com",
+    projectId: "ai-chatbot-42003",
+    storageBucket: "ai-chatbot-42003.appspot.com",
+    messagingSenderId: "373487695386",
+    appId: "1:373487695386:web:5439afc32af973944343a3",
 };
 
 // Initialize Firebase
