@@ -9,11 +9,12 @@ import {
     TouchableOpacity,
     ScrollView,
 } from "react-native";
-import MyHeader from "../components/MyHeader";
 import { useFocusEffect } from "@react-navigation/native";
-import MyChatListItem from "../components/MyChatListItem";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import MyProfileHeader from "../components/MyProfileHeader";
+import MyChatListItem from "../components/MyChatListItem";
+import MyCharacterListItem from "../components/profile/MyCharacterListItem";
+import FavoriteCharacterListItem from "../components/profile/FavoriteCharacterListItem";
 
 const ProfileScreen = () => {
     const [activeTab, setActiveTab] = useState("savedChats");
@@ -21,7 +22,6 @@ const ProfileScreen = () => {
     const [chatsHistory, setChatsHistory] = useState([]);
     const [newCharacters, setNewCharacters] = useState([]);
 
-    // Tabs data
     const tabs = [
         { label: "Saved Chats", value: "savedChats" },
         { label: "My Characters", value: "myCharacters" },
@@ -43,7 +43,6 @@ const ProfileScreen = () => {
     const getChatsHistory = async () => {
         try {
             const value = await AsyncStorage.getItem("chats-history");
-            console.log(value);
             const history = value ? JSON.parse(value) : [];
             setChatsHistory(Array.isArray(history) ? history : []);
         } catch (e) {
@@ -65,14 +64,16 @@ const ProfileScreen = () => {
         try {
             const value = await AsyncStorage.getItem("favorite-characters");
             const characters = JSON.parse(value);
-            console.log("favorites: ", characters);
             setFavoriteCharacters(Array.isArray(characters) ? characters : []);
         } catch (e) {
             console.log(`Failed to get favorite characters:`, e);
         }
     };
 
-    // Function to render content based on active tab
+    const handleToggleFavorite = () => {
+        getFavoriteCharacters(); // Refresh the favorite characters list
+    };
+
     const renderContent = () => {
         switch (activeTab) {
             case "savedChats":
@@ -102,7 +103,7 @@ const ProfileScreen = () => {
                     >
                         {newCharacters.length > 0 ? (
                             newCharacters.map((character, index) => (
-                                <MyChatListItem key={index} character={character} />
+                                <MyCharacterListItem key={index} character={character} />
                             ))
                         ) : (
                             <View className="flex-1 items-center justify-center">
@@ -122,7 +123,11 @@ const ProfileScreen = () => {
                     >
                         {favoriteCharacters.length > 0 ? (
                             favoriteCharacters.map((character, index) => (
-                                <MyChatListItem key={index} character={character} />
+                                <FavoriteCharacterListItem
+                                    key={index}
+                                    character={character}
+                                    onToggleFavorite={handleToggleFavorite}
+                                />
                             ))
                         ) : (
                             <View className="flex-1 items-center justify-center">
