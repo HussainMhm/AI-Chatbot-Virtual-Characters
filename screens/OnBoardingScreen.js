@@ -22,6 +22,12 @@ const OnBoardingScreen = ({ navigation }) => {
         checkFirstLaunch();
     }, []);
 
+    useEffect(() => {
+        if (isFirstLaunch === false) {
+            navigation.replace("Main");
+        }
+    }, [isFirstLaunch, navigation]);
+
     const navigateToMainScreen = () => {
         navigation.replace("Main");
     };
@@ -53,9 +59,6 @@ const OnBoardingScreen = ({ navigation }) => {
 
     if (isFirstLaunch === null) {
         return null; // Show a loading spinner or splash screen if needed
-    } else if (isFirstLaunch === false) {
-        navigateToMainScreen();
-        return null;
     }
 
     return (
