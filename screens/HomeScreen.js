@@ -11,10 +11,11 @@ import {
 
 import MyHeader from "../components/MyHeader";
 import MyCharactersList from "../components/MyCharactersList";
+import MyVerticalCharactersList from "../components/MyVerticalCharactersList";
 
 import categoriesData from "../data/categories.json";
 import charactersData from "../data/characters.json";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { FIREBASE_DB, FIREBASE_AUTH } from "../firebaseConfig";
@@ -27,7 +28,7 @@ const HomeScreen = ({ navigation }) => {
     // Category state and handler
     const [activeCategory, setActiveCategory] = useState(-1);
     const [categoryWithCharacters, setCategoryWithCharacters] = useState([]);
-    const [filterdCategoryWithCharacters, setFilterdCategoryWithCharacters] = useState([]);
+    const [filteredCategoryWithCharacters, setFilteredCategoryWithCharacters] = useState([]);
 
     const [favorites, setFavorites] = useState([]);
 
@@ -56,45 +57,41 @@ const HomeScreen = ({ navigation }) => {
 
     // Combine characters with categories
     const getCharactersWithCategories = (characters, categories) => {
-        // Create a copy of the categories array to avoid mutating the original data
         const combinedCategories = categories.map((category) => ({
             ...category,
-            characters: [], // Initialize an empty characters array
+            characters: [],
         }));
 
-        // Map characters to the appropriate category
         characters.forEach((character) => {
             combinedCategories[character.category_id].characters.push(character);
         });
 
-        return combinedCategories; // Return the combined list of categories with characters
+        return combinedCategories;
     };
 
     // Filter characters by category ID
     const filterCharactersByCategoryId = (categoryId = -1) => {
-        // If the category ID is -1 (representing 'All'), return all categories with their characters
         if (categoryId === -1) {
             return categoryWithCharacters;
         }
 
-        // Return only the category that matches the given category ID
         return categoryWithCharacters.filter((cat) => cat.id === categoryId);
     };
 
     // Category press handler
     const handleCategoryPress = (category) => {
-        const categoryId = category ? category.id : -1; // Handle cases where 'category' is undefined
+        const categoryId = category ? category.id : -1;
         setActiveCategory(categoryId);
 
         const filtered = filterCharactersByCategoryId(categoryId);
-        setFilterdCategoryWithCharacters(filtered);
+        setFilteredCategoryWithCharacters(filtered);
     };
 
     const handleHeartPress = async (characterId) => {
         try {
             let updatedFavorites = [];
             if (favorites.includes(characterId)) {
-                updatedFavorites = favorites.filter(fav => fav !== characterId);
+                updatedFavorites = favorites.filter((fav) => fav !== characterId);
             } else {
                 updatedFavorites = [...favorites, characterId];
             }
@@ -104,7 +101,7 @@ const HomeScreen = ({ navigation }) => {
                 const docRef = doc(FIREBASE_DB, "user_favorites", user.uid);
                 await setDoc(docRef, { favorites: updatedFavorites });
             } else {
-                await AsyncStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+                await AsyncStorage.setItem("favorites", JSON.stringify(updatedFavorites));
             }
         } catch (error) {
             console.error("Error updating favorites:", error);
@@ -121,7 +118,7 @@ const HomeScreen = ({ navigation }) => {
                     setFavorites(data.favorites || []);
                 }
             } else {
-                const value = await AsyncStorage.getItem('favorites');
+                const value = await AsyncStorage.getItem("favorites");
                 let favoriteCharacters = value ? JSON.parse(value) : [];
                 setFavorites(favoriteCharacters);
             }
@@ -131,52 +128,47 @@ const HomeScreen = ({ navigation }) => {
     };
 
     useEffect(() => {
-        // Initialize the state with characters combined with categories
         const initialCharacters = getCharactersWithCategories(characters, categories);
-
-        // Initialize the state with characters combined with categories
         setCategoryWithCharacters(initialCharacters);
-
-        // Initialize the filtered state with all characters
-        setFilterdCategoryWithCharacters(initialCharacters);
-    }, [characters, categories]); // Dependency on characters and categories
+        setFilteredCategoryWithCharacters(initialCharacters);
+    }, [characters, categories]);
 
     return (
         <SafeAreaView
             className={`flex-1 bg-chatbot-dark`}
             style={{ paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0 }}
         >
-            {/* Header component */}
             <MyHeader title="ChatBot AI" icon="search" />
 
-            {/* Categories */}
             <View className="flex-row pr-4 py-2">
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} className="p-2">
-                    {/* 'All' Category */}
                     <TouchableOpacity
-                        onPress={() => handleCategoryPress(null)} // Handle 'All' category press
-                        className={`px-6 py-3 mx-2 rounded-2xl ${activeCategory === -1 ? "bg-white" : "bg-[#222222]"
-                            }`}
+                        onPress={() => handleCategoryPress(null)}
+                        className={`px-6 py-3 mx-2 rounded-2xl ${
+                            activeCategory === -1 ? "bg-white" : "bg-[#222222]"
+                        }`}
                     >
                         <Text
-                            className={`text-base font-semibold ${activeCategory === -1 ? "text-black" : "text-white"
-                                }`}
+                            className={`text-base font-semibold ${
+                                activeCategory === -1 ? "text-black" : "text-white"
+                            }`}
                         >
                             All
                         </Text>
                     </TouchableOpacity>
 
-                    {/* Other Categories */}
                     {categories.map((category, index) => (
                         <TouchableOpacity
                             key={index}
                             onPress={() => handleCategoryPress(category)}
-                            className={`px-4 py-3 mx-2 rounded-2xl ${activeCategory === category.id ? "bg-white" : "bg-[#222222]"
-                                }`}
+                            className={`px-4 py-3 mx-2 rounded-2xl ${
+                                activeCategory === category.id ? "bg-white" : "bg-[#222222]"
+                            }`}
                         >
                             <Text
-                                className={`text-base font-semibold ${activeCategory === category.id ? "text-black" : "text-white"
-                                    }`}
+                                className={`text-base font-semibold ${
+                                    activeCategory === category.id ? "text-black" : "text-white"
+                                }`}
                             >
                                 {category.name}
                             </Text>
@@ -185,20 +177,27 @@ const HomeScreen = ({ navigation }) => {
                 </ScrollView>
             </View>
 
-            {/* Characters List */}
-            <ScrollView showsVertical ScrollIndicator={false}>
-                {filterdCategoryWithCharacters.map((category, i) => (
-                    <MyCharactersList
-                        key={i}
-                        listType={listTypes[i % 3]} // Cycle through list types
-                        categoryName={category.name}
-                        characters={category.characters}
-                        favorites={favorites}
-                        onHeartPress={handleHeartPress}
-                        onAllCharactersPress={() => handleCategoryPress(category)}
-                    />
-                ))}
-            </ScrollView>
+            {activeCategory !== -1 ? (
+                <MyVerticalCharactersList
+                    characters={filteredCategoryWithCharacters[0]?.characters || []}
+                    favorites={favorites}
+                    onHeartPress={handleHeartPress}
+                />
+            ) : (
+                <ScrollView showsVertical ScrollIndicator={false}>
+                    {filteredCategoryWithCharacters.map((category, i) => (
+                        <MyCharactersList
+                            key={i}
+                            listType={listTypes[i % 3]}
+                            categoryName={category.name}
+                            characters={category.characters}
+                            favorites={favorites}
+                            onHeartPress={handleHeartPress}
+                            onAllCharactersPress={() => handleCategoryPress(category)}
+                        />
+                    ))}
+                </ScrollView>
+            )}
         </SafeAreaView>
     );
 };
