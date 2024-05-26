@@ -42,6 +42,10 @@ const FeedScreen = () => {
         }
     }, [cards]);
 
+    const handleSwipedAll = () => {
+        setSwiperKey((prevKey) => prevKey + 1); // Reset the swiper by updating the key
+    };
+
     return (
         <SafeAreaView
             className={`flex-1 bg-chatbot-dark`}
@@ -84,6 +88,7 @@ const FeedScreen = () => {
                     }}
                     onSwipedLeft={(cardIndex) => onSwiped(cardIndex)}
                     onSwipedRight={(cardIndex) => onSwiped(cardIndex)}
+                    onSwipedAll={handleSwipedAll} // Reset swiper when all cards are swiped
                     cardIndex={0}
                     backgroundColor={"transparent"}
                     stackSize={4}
