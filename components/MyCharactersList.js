@@ -9,6 +9,7 @@ const MyCharactersList = ({
     listType,
     categoryName,
     characters,
+    favorites,
     onHeartPress,
     onAllCharactersPress,
 }) => {
@@ -59,6 +60,7 @@ const MyCharactersList = ({
                         character={character}
                         imageWidth={imageWidth}
                         imageHeight={imageHeight}
+                        isFavorite={favorites.includes(character.id)}
                         onHeartPress={onHeartPress}
                     />
                 ))}

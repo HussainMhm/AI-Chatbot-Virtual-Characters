@@ -14,16 +14,35 @@ import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import MyHeader from "../components/MyHeader";
 import MyChatListItem from "../components/MyChatListItem";
 
+import { doc, getDoc } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+import { FIREBASE_DB, FIREBASE_AUTH } from "../firebaseConfig";
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from "@react-navigation/native";
 
 
 const ChatListScreen = () => {
     const [chatsHistory, setChatsHistory] = useState([]);
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (currentUser) => {
+            setUser(currentUser);
+        });
+
+        return () => unsubscribe();
+    }, []);
 
     useEffect(() => {
         getChatsHistory();
-    }, []);
+    }, [user]);
+
+    useFocusEffect(
+        React.useCallback(() => {
+            getChatsHistory();
+        }, [user])
+    );
 
     useFocusEffect(
         React.useCallback(() => {
@@ -33,9 +52,22 @@ const ChatListScreen = () => {
 
     const getChatsHistory = async () => {
         try {
-            const value = await AsyncStorage.getItem('chats-history');
-            const history = JSON.parse(value);
-            setChatsHistory(Array.isArray(history) ? history : []);
+            if (user) {
+                const docRef = doc(FIREBASE_DB, "user_chat_history", user.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    console.log(data);
+                    const history = Object.values(data);
+                    setChatsHistory(Array.isArray(history) ? history : []);
+                } else {
+                    setChatsHistory([]);
+                }
+            } else {
+                const value = await AsyncStorage.getItem('chats-history');
+                const history = JSON.parse(value);
+                setChatsHistory(Array.isArray(history) ? history : []);
+            }
         } catch (e) {
             console.log(`Failed to get chat history:`, e);
         }
@@ -67,7 +99,7 @@ const ChatListScreen = () => {
                         chatsHistory.map((chatHistory, index) => (
                             <MyChatListItem
                                 key={index}
-                                character={chatHistory?.chat}
+                                character={chatHistory}
                             />
                         ))
                     ) : (

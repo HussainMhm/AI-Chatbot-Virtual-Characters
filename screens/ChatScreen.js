@@ -12,17 +12,18 @@ import {
     Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import MyChatTopBar from "../components/MyChatTopBar";
 import MyChatInputBar from "../components/MyChatInputBar";
-
+import { FIREBASE_DB, FIREBASE_AUTH } from "../firebaseConfig";
 import { apiCall } from "../api/openAi";
 import { getImage } from "../helpers/index";
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ChatScreen = ({ navigation, route }) => {
     const { character } = route.params;
-
     const [messages, setMessages] = useState([
         { role: "system", content: character.system_content },
         { role: "assistant", content: character.assistant_content },
@@ -30,30 +31,159 @@ const ChatScreen = ({ navigation, route }) => {
     const [messageText, setMessageText] = useState("");
     const [loading, setLoading] = useState(false);
     const [recommendationsVisible, setRecommendationsVisible] = useState(true);
-    const [saveChat, setSaveChat] = useState(false);
+    const [user, setUser] = useState(null);
+    const [favorites, setFavorites] = useState([]);
+
     const ScrollViewRef = useRef();
 
-    useEffect(()=>{
-        if (character?.messages){
-            setMessages(character?.messages)
-        }
-    }, [])
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (currentUser) => {
+            setUser(currentUser);
+        });
+
+        return () => unsubscribe();
+    }, []);
 
     useEffect(() => {
-        const saveChatMessages = async () => {
-            try {
+        loadChatHistory();
+        loadFavorites();
+    }, [character.id, user]);
+
+    const loadChatHistory = async () => {
+        try {
+            let chatExists = false;
+            let existingMessages = [];
+
+            if (user) {
+                const docRef = doc(FIREBASE_DB, "user_chat_history", user.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data[character.id]) {
+                        existingMessages = data[character.id].messages;
+                        chatExists = true;
+                    }
+                }
+            } else {
                 const value = await AsyncStorage.getItem('chats-history');
                 let chatsHistory = value ? JSON.parse(value) : [];
-                
-                // Find index of the existing character chat, if it exists
+                const characterChat = chatsHistory.find(chat => chat?.chat?.id === character.id);
+                if (characterChat) {
+                    existingMessages = characterChat.chat.messages;
+                    chatExists = true;
+                }
+            }
+
+            if (chatExists) {
+                Alert.alert(
+                    "Chat History Found",
+                    "Do you want to continue the previous chat or start a new one?",
+                    [
+                        {
+                            text: "New Chat",
+                            onPress: async () => {
+                                // Reset messages to default for a new chat
+                                setMessages([
+                                    { role: "system", content: character.system_content },
+                                    { role: "assistant", content: character.assistant_content },
+                                ]);
+                                // Delete the existing chat history
+                                await deleteChatHistory();
+                            }
+                        },
+                        {
+                            text: "Continue",
+                            onPress: () => {
+                                setMessages(existingMessages);
+                            }
+                        }
+                    ],
+                    { cancelable: false }
+                );
+            }
+        } catch (error) {
+            console.error("Error loading chat history:", error);
+        }
+    };
+
+    const loadFavorites = async () => {
+        try {
+            if (user) {
+                const docRef = doc(FIREBASE_DB, "user_favorites", user.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    setFavorites(data.favorites || []);
+                }
+            } else {
+                const value = await AsyncStorage.getItem('favorites');
+                let favoriteCharacters = value ? JSON.parse(value) : [];
+                setFavorites(favoriteCharacters);
+            }
+        } catch (error) {
+            console.error("Error loading favorites:", error);
+        }
+    };
+
+    const deleteChatHistory = async () => {
+        try {
+            if (user) {
+                const docRef = doc(FIREBASE_DB, "user_chat_history", user.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data[character.id]) {
+                        delete data[character.id];
+                        await setDoc(docRef, data);
+                    }
+                }
+            } else {
+                const value = await AsyncStorage.getItem('chats-history');
+                let chatsHistory = value ? JSON.parse(value) : [];
+                chatsHistory = chatsHistory.filter(chat => chat?.chat?.id !== character.id);
+                await AsyncStorage.setItem('chats-history', JSON.stringify(chatsHistory));
+            }
+            restartChat();
+        } catch (error) {
+            console.error("Error deleting chat history:", error);
+        }
+    };
+
+    const restartChat = () => {
+        setMessages([
+            { role: "system", content: character.system_content },
+            { role: "assistant", content: character.assistant_content },
+        ]);
+
+        setRecommendationsVisible(true);
+    }
+
+    const saveChatMessages = async () => {
+        // Check if there are any user messages
+        const userMessagesExist = messages.some(message => message.role === "user");
+        if (!userMessagesExist) return; // If no user messages, do not save
+
+        try {
+            if (user) {
+                const docRef = doc(FIREBASE_DB, "user_chat_history", user.uid);
+                const docSnap = await getDoc(docRef);
+                const existingData = docSnap.exists() ? docSnap.data() : {};
+                const updatedData = {
+                    ...existingData,
+                    [character.id]: {
+                        ...character,
+                        messages: messages
+                    }
+                };
+                await setDoc(docRef, updatedData);
+            } else {
+                const value = await AsyncStorage.getItem('chats-history');
+                let chatsHistory = value ? JSON.parse(value) : [];
+
                 const index = chatsHistory.findIndex(chat => chat?.chat?.id === character.id);
-
-
                 if (index !== -1) {
-                    // Replace existing chat messages for this character
                     chatsHistory[index].chat.messages = messages;
                 } else {
-                    // Push new chat entry if character not found
                     chatsHistory.push({
                         chat: {
                             ...character,
@@ -62,15 +192,32 @@ const ChatScreen = ({ navigation, route }) => {
                     });
                 }
                 await AsyncStorage.setItem('chats-history', JSON.stringify(chatsHistory));
-            } catch (error) {
-                console.error('Error saving chats history:', error);
             }
-        };
+        } catch (error) {
+            console.error("Error saving chats history:", error);
+        }
+    };
 
-        return () => {
-            saveChatMessages();
-        };
-    }, [messages]);
+    const toggleFavorite = async () => {
+        try {
+            let updatedFavorites = [];
+            if (favorites.includes(character.id)) {
+                updatedFavorites = favorites.filter(fav => fav !== character.id);
+            } else {
+                updatedFavorites = [...favorites, character.id];
+            }
+            setFavorites(updatedFavorites);
+
+            if (user) {
+                const docRef = doc(FIREBASE_DB, "user_favorites", user.uid);
+                await setDoc(docRef, { favorites: updatedFavorites });
+            } else {
+                await AsyncStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+            }
+        } catch (error) {
+            console.error("Error updating favorites:", error);
+        }
+    };
 
     const sendMessage = () => {
         if (messageText.trim().length > 0) {
@@ -195,7 +342,10 @@ const ChatScreen = ({ navigation, route }) => {
                     paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
                 }}
             >
-                <MyChatTopBar />
+                <MyChatTopBar
+                    messages={messages} favorites={favorites} character={character}
+                    saveChatMessages={saveChatMessages} deleteChatHistory={deleteChatHistory} 
+                    restartChat={restartChat} toggleFavorite={toggleFavorite} />
 
                 <ScrollView ref={ScrollViewRef} className="flex-1 px-5 py-3">
                     {messages.map((message, i) => (

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     View,
     Text,
@@ -15,6 +15,10 @@ import MyCharactersList from "../components/MyCharactersList";
 import categoriesData from "../data/categories.json";
 import charactersData from "../data/characters.json";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+import { FIREBASE_DB, FIREBASE_AUTH } from "../firebaseConfig";
+import { useFocusEffect } from "@react-navigation/native";
 
 const HomeScreen = ({ navigation }) => {
     const [categories] = useState(categoriesData.categories);
@@ -24,6 +28,25 @@ const HomeScreen = ({ navigation }) => {
     const [activeCategory, setActiveCategory] = useState(-1);
     const [categoryWithCharacters, setCategoryWithCharacters] = useState([]);
     const [filterdCategoryWithCharacters, setFilterdCategoryWithCharacters] = useState([]);
+
+    const [favorites, setFavorites] = useState([]);
+
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (currentUser) => {
+            setUser(currentUser);
+            loadFavorites();
+        });
+
+        return () => unsubscribe();
+    }, []);
+
+    useFocusEffect(
+        React.useCallback(() => {
+            loadFavorites();
+        }, [])
+    );
 
     const listTypes = {
         0: "portrait",
@@ -67,39 +90,43 @@ const HomeScreen = ({ navigation }) => {
         setFilterdCategoryWithCharacters(filtered);
     };
 
-    // Heart icon press handler
-    const handleHeartPress = (character) => {
-        // Handle heart icon press
-        saveCharacterToFavorites(character)
+    const handleHeartPress = async (characterId) => {
+        try {
+            let updatedFavorites = [];
+            if (favorites.includes(characterId)) {
+                updatedFavorites = favorites.filter(fav => fav !== characterId);
+            } else {
+                updatedFavorites = [...favorites, characterId];
+            }
+            setFavorites(updatedFavorites);
+
+            if (user) {
+                const docRef = doc(FIREBASE_DB, "user_favorites", user.uid);
+                await setDoc(docRef, { favorites: updatedFavorites });
+            } else {
+                await AsyncStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+            }
+        } catch (error) {
+            console.error("Error updating favorites:", error);
+        }
     };
 
-    const saveCharacterToFavorites = async (character) => {
+    const loadFavorites = async () => {
         try {
-            const value = await AsyncStorage.getItem('favorite-characters');
-
-            let favoriteCharacters = [];
-
-            if (value != null) {
-                favoriteCharacters = JSON.parse(value);
-                favoriteCharacters = Array.isArray(favoriteCharacters) ? favoriteCharacters : [];
-            }
-
-            // Find index of the existing favorite character, if it exists
-            const index = favoriteCharacters.findIndex(c => c?.id === character.id);
-            console.log(index);
-            if (index !== -1) {
-                // Remove the character from the favorites
-                favoriteCharacters.splice(index, 1)
-
+            if (user) {
+                const docRef = doc(FIREBASE_DB, "user_favorites", user.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    setFavorites(data.favorites || []);
+                }
             } else {
-                // Add the character to the favorites
-                favoriteCharacters.push(character);
+                const value = await AsyncStorage.getItem('favorites');
+                let favoriteCharacters = value ? JSON.parse(value) : [];
+                setFavorites(favoriteCharacters);
             }
-
-            const jsonValue = JSON.stringify(favoriteCharacters);
-            await AsyncStorage.setItem('favorite-characters', jsonValue);
-        } catch (e) {
-            console.log(`Failed to save favorite characters. ${e}`);
+        } catch (error) {
+            console.error("Error loading favorites:", error);
         }
     };
 
@@ -166,6 +193,7 @@ const HomeScreen = ({ navigation }) => {
                         listType={listTypes[i % 3]} // Cycle through list types
                         categoryName={category.name}
                         characters={category.characters}
+                        favorites={favorites}
                         onHeartPress={handleHeartPress}
                         onAllCharactersPress={() => handleCategoryPress(category)}
                     />
