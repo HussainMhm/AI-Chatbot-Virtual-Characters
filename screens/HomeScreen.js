@@ -7,6 +7,7 @@ import {
     StatusBar,
     ScrollView,
     TouchableOpacity,
+    TextInput,
 } from "react-native";
 
 import MyHeader from "../components/MyHeader";
@@ -20,20 +21,26 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { FIREBASE_DB, FIREBASE_AUTH } from "../firebaseConfig";
 import { useFocusEffect } from "@react-navigation/native";
+import { FontAwesome } from "@expo/vector-icons";
 
 const HomeScreen = ({ navigation }) => {
     const [categories] = useState(categoriesData.categories);
     const [characters] = useState(charactersData.characters);
 
-    // Category state and handler
+    // State to manage active category
     const [activeCategory, setActiveCategory] = useState(-1);
     const [categoryWithCharacters, setCategoryWithCharacters] = useState([]);
     const [filteredCategoryWithCharacters, setFilteredCategoryWithCharacters] = useState([]);
 
+    // State to manage favorites
     const [favorites, setFavorites] = useState([]);
-
     const [user, setUser] = useState(null);
 
+    // State for search functionality
+    const [searchQuery, setSearchQuery] = useState("");
+    const [isSearchVisible, setIsSearchVisible] = useState(false);
+
+    // Listen to auth state changes
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (currentUser) => {
             setUser(currentUser);
@@ -43,6 +50,7 @@ const HomeScreen = ({ navigation }) => {
         return () => unsubscribe();
     }, []);
 
+    // Load favorites when screen is focused
     useFocusEffect(
         React.useCallback(() => {
             loadFavorites();
@@ -78,8 +86,11 @@ const HomeScreen = ({ navigation }) => {
         return categoryWithCharacters.filter((cat) => cat.id === categoryId);
     };
 
-    // Category press handler
+    // Handle category press
     const handleCategoryPress = (category) => {
+        // Close search bar when category is pressed
+        setIsSearchVisible(false);
+
         const categoryId = category ? category.id : -1;
         setActiveCategory(categoryId);
 
@@ -87,6 +98,7 @@ const HomeScreen = ({ navigation }) => {
         setFilteredCategoryWithCharacters(filtered);
     };
 
+    // Handle heart press to add/remove favorites
     const handleHeartPress = async (characterId) => {
         try {
             let updatedFavorites = [];
@@ -108,6 +120,7 @@ const HomeScreen = ({ navigation }) => {
         }
     };
 
+    // Load favorites from Firebase or AsyncStorage
     const loadFavorites = async () => {
         try {
             if (user) {
@@ -127,18 +140,68 @@ const HomeScreen = ({ navigation }) => {
         }
     };
 
+    // Initialize characters with categories
     useEffect(() => {
         const initialCharacters = getCharactersWithCategories(characters, categories);
         setCategoryWithCharacters(initialCharacters);
         setFilteredCategoryWithCharacters(initialCharacters);
     }, [characters, categories]);
 
+    // Filter characters by search query
+    const filterCharactersBySearch = (query) => {
+        if (query === "") {
+            setFilteredCategoryWithCharacters(categoryWithCharacters);
+        } else {
+            const filtered = categoryWithCharacters.map((category) => ({
+                ...category,
+                characters: category.characters.filter((character) =>
+                    character.name.toLowerCase().includes(query.toLowerCase())
+                ),
+            }));
+            setFilteredCategoryWithCharacters(filtered);
+        }
+    };
+
+    useEffect(() => {
+        filterCharactersBySearch(searchQuery);
+    }, [searchQuery, categoryWithCharacters]);
+
+    // Handle search icon press
+    const handleSearchIconPress = () => {
+        setIsSearchVisible(!isSearchVisible);
+        setSearchQuery(""); // Clear search query when closing search bar
+    };
+
     return (
         <SafeAreaView
             className={`flex-1 bg-chatbot-dark`}
             style={{ paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0 }}
         >
-            <MyHeader title="ChatBot AI" icon="search" />
+            <MyHeader
+                title="ChatBot AI"
+                icon={isSearchVisible ? "close" : "search"}
+                onIconPress={handleSearchIconPress}
+            />
+
+            {isSearchVisible && (
+                <View className="flex-row m-4 p-4 rounded-3xl bg-[#1b1b1b] items-center">
+                    <FontAwesome
+                        name="search"
+                        size={24}
+                        color="white"
+                        style={{ paddingRight: 16 }}
+                    />
+                    <TextInput
+                        placeholder="Search characters..."
+                        placeholderTextColor="gray"
+                        className={`flex-1 text-lg text-white ${
+                            Platform.OS === "ios" ? "-mt-1" : ""
+                        }`}
+                        value={searchQuery}
+                        onChangeText={(text) => setSearchQuery(text)}
+                    />
+                </View>
+            )}
 
             <View className="flex-row pr-4 py-2">
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} className="p-2">
