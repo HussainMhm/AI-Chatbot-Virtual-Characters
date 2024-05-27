@@ -65,7 +65,7 @@ const ChatScreen = ({ navigation, route }) => {
                     }
                 }
             } else {
-                const value = await AsyncStorage.getItem('user_chat_history');
+                const value = await AsyncStorage.getItem("user_chat_history");
                 let chatsHistory = value ? JSON.parse(value) : [];
                 const characterChat = chatsHistory.find((chat) => chat?.chat?.id === character.id);
                 if (characterChat) {
@@ -116,7 +116,7 @@ const ChatScreen = ({ navigation, route }) => {
                     setFavorites(data.favorites || []);
                 }
             } else {
-                const value = await AsyncStorage.getItem('user_favorites');
+                const value = await AsyncStorage.getItem("user_favorites");
                 let favoriteCharacters = value ? JSON.parse(value) : [];
                 setFavorites(favoriteCharacters);
             }
@@ -138,10 +138,10 @@ const ChatScreen = ({ navigation, route }) => {
                     }
                 }
             } else {
-                const value = await AsyncStorage.getItem('user_chat_history');
+                const value = await AsyncStorage.getItem("user_chat_history");
                 let chatsHistory = value ? JSON.parse(value) : [];
-                chatsHistory = chatsHistory.filter(chat => chat?.chat?.id !== character.id);
-                await AsyncStorage.setItem('user_chat_history', JSON.stringify(chatsHistory));
+                chatsHistory = chatsHistory.filter((chat) => chat?.chat?.id !== character.id);
+                await AsyncStorage.setItem("user_chat_history", JSON.stringify(chatsHistory));
             }
             restartChat();
         } catch (error) {
@@ -177,7 +177,7 @@ const ChatScreen = ({ navigation, route }) => {
                 };
                 await setDoc(docRef, updatedData);
             } else {
-                const value = await AsyncStorage.getItem('user_chat_history');
+                const value = await AsyncStorage.getItem("user_chat_history");
                 let chatsHistory = value ? JSON.parse(value) : [];
 
                 const index = chatsHistory.findIndex((chat) => chat?.chat?.id === character.id);
@@ -191,7 +191,7 @@ const ChatScreen = ({ navigation, route }) => {
                         },
                     });
                 }
-                await AsyncStorage.setItem('user_chat_history', JSON.stringify(chatsHistory));
+                await AsyncStorage.setItem("user_chat_history", JSON.stringify(chatsHistory));
             }
         } catch (error) {
             console.error("Error saving chats history:", error);
@@ -212,7 +212,7 @@ const ChatScreen = ({ navigation, route }) => {
                 const docRef = doc(FIREBASE_DB, "user_favorites", user.uid);
                 await setDoc(docRef, { favorites: updatedFavorites });
             } else {
-                await AsyncStorage.setItem('user_favorites', JSON.stringify(updatedFavorites));
+                await AsyncStorage.setItem("user_favorites", JSON.stringify(updatedFavorites));
             }
         } catch (error) {
             console.error("Error updating favorites:", error);
@@ -293,7 +293,7 @@ const ChatScreen = ({ navigation, route }) => {
                         />
                     </View>
                 );
-            } else if (message.content.length > 0){
+            } else if (message.content.length > 0) {
                 return (
                     <View
                         key={index}
@@ -309,7 +309,11 @@ const ChatScreen = ({ navigation, route }) => {
     };
 
     const renderRecommendations = () => {
-        if (!recommendationsVisible || (! character.recommendations || character.recommendations?.length <= 0)) {
+        if (
+            !recommendationsVisible ||
+            !character.recommendations ||
+            character.recommendations?.length <= 0
+        ) {
             return null;
         }
 
@@ -336,14 +340,18 @@ const ChatScreen = ({ navigation, route }) => {
 
     return (
         <ImageBackground
-            source={character?.image_path?.startsWith('assets/')
-            ? getImage(character?.id)
-            : {
-                uri:
-                    character?.image_path ??
-                    "https://randomuser.me/api/portraits/med/men/1.jpg",
-            }}
-            className="flex-1" resizeMode="cover">
+            source={
+                character?.image_path?.startsWith("assets/")
+                    ? getImage(character?.id)
+                    : {
+                          uri:
+                              character?.image_path ??
+                              "https://randomuser.me/api/portraits/med/men/1.jpg",
+                      }
+            }
+            className="flex-1"
+            resizeMode="cover"
+        >
             <SafeAreaView
                 style={{
                     flex: 1,

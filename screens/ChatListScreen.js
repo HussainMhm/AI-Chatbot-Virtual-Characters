@@ -36,7 +36,7 @@ const ChatListScreen = ({ navigation }) => {
         const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (currentUser) => {
             if (currentUser) {
                 getChatsHistory();
-            }else {
+            } else {
                 getChatsHistoryFromLocal();
             }
             setUser(currentUser);
@@ -71,14 +71,14 @@ const ChatListScreen = ({ navigation }) => {
 
     const getChatsHistoryFromLocal = async () => {
         try {
-            const value = await AsyncStorage.getItem('user_chat_history');
+            const value = await AsyncStorage.getItem("user_chat_history");
             const history = JSON.parse(value);
             setChatsHistory(Array.isArray(history) ? history : []);
             setFilteredChats(Array.isArray(history) ? history : []);
         } catch (e) {
             console.log(`Failed to get chat history from local storage:`, e);
         }
-    }
+    };
 
     const handleSearch = (query) => {
         setSearchQuery(query);
@@ -101,8 +101,6 @@ const ChatListScreen = ({ navigation }) => {
         setIsModalVisible(false);
         navigation.navigate("Chat", { character });
     };
-    }
-
 
     return (
         <SafeAreaView
