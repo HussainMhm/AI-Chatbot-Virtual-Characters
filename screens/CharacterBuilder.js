@@ -9,6 +9,7 @@ import {
     StatusBar,
     ScrollView,
     Image,
+    Alert,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Picker } from "@react-native-picker/picker";
@@ -31,7 +32,47 @@ const CharacterBuilder = ({ navigation }) => {
     const totalSteps = 7;
 
     const handleNextStep = () => {
-        setStep((prevStep) => prevStep + 1);
+        let validationMessage = "";
+        switch (step) {
+            case 1:
+                if (characterName.trim().length === 0) {
+                    validationMessage = "Character name is required.";
+                }
+                break;
+            case 2:
+                if (characterPhoto === null) {
+                    validationMessage = "Choosing a photo is required.";
+                }
+                break;
+            case 3:
+                if (characterAge <= 0 || characterGender.trim().length === 0) {
+                    validationMessage = "Age and gender are required.";
+                }
+                break;
+            case 4:
+                if (characterHometown.trim().length === 0) {
+                    validationMessage = "Hometown is required.";
+                }
+                break;
+            case 5:
+                if (characterInterests.length === 0 || characterInterests.length > 3) {
+                    validationMessage = "Choose up to 3 interests.";
+                }
+                break;
+            case 6:
+                if (characterFirstMessage.trim().length === 0) {
+                    validationMessage = "First message is required.";
+                }
+                break;
+            default:
+                break;
+        }
+
+        if (validationMessage) {
+            Alert.alert("Validation Error", validationMessage);
+        } else {
+            setStep((prevStep) => prevStep + 1);
+        }
     };
 
     const handleBackStep = () => {
@@ -92,7 +133,6 @@ const CharacterBuilder = ({ navigation }) => {
         "Sports",
         "Technology",
         "Travel",
-        // Add more interests as needed
     ];
     const interestEmojis = {
         Art: "🎨",
@@ -191,6 +231,25 @@ const CharacterBuilder = ({ navigation }) => {
         );
     };
 
+    const validateStep = (currentStep) => {
+        switch (currentStep) {
+            case 1:
+                return characterName.trim().length > 0;
+            case 2:
+                return characterPhoto !== null;
+            case 3:
+                return characterAge > 0 && characterGender.trim().length > 0;
+            case 4:
+                return characterHometown.trim().length > 0;
+            case 5:
+                return characterInterests.length > 0 && characterInterests.length <= 3;
+            case 6:
+                return characterFirstMessage.trim().length > 0;
+            default:
+                return true;
+        }
+    };
+
     // Render different UI components based on the current step
     const renderStep = () => {
         switch (step) {
@@ -242,19 +301,44 @@ const CharacterBuilder = ({ navigation }) => {
                         )}
 
                         {/* Photo picker and display */}
-                        <View className="flex-1 mt-4 items-center">
+                        <View className="flex-1 items-center">
                             {characterPhoto && (
                                 <Image
                                     source={{ uri: characterPhoto }}
-                                    className="w-64 h-64 rounded-xl mb-4"
+                                    className="w-48 h-48 rounded-xl mb-4"
                                 />
                             )}
                             <TouchableOpacity
-                                className="bg-[#1b1b1b] w-28 h-28 justify-center items-center mt-4 rounded-3xl"
+                                className="bg-[#1b1b1b] w-20 h-20 justify-center items-center mt-4 rounded-3xl"
                                 onPress={pickImage}
                             >
-                                <Ionicons name="images" size={40} color="white" />
+                                <Ionicons name="images" size={32} color="white" />
                             </TouchableOpacity>
+
+                            <Text className="text-white text-lg mt-4">
+                                Or choose a default image:
+                            </Text>
+
+                            <ScrollView horizontal className="mt-4">
+                                {defaultImages.map((image, index) => (
+                                    <TouchableOpacity
+                                        key={index}
+                                        onPress={() => setCharacterPhoto(image)}
+                                    >
+                                        <Image
+                                            source={{ uri: image }}
+                                            className={`w-20 h-20 rounded-xl m-2`}
+                                            style={{
+                                                borderWidth: 4,
+                                                borderColor:
+                                                    characterPhoto === image
+                                                        ? "#3b82f6"
+                                                        : "transparent",
+                                            }}
+                                        />
+                                    </TouchableOpacity>
+                                ))}
+                            </ScrollView>
                         </View>
                     </View>
                 );
