@@ -12,9 +12,9 @@ import {
     Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import MyChatTopBar from "../components/MyChatTopBar";
 import MyChatInputBar from "../components/MyChatInputBar";
@@ -67,7 +67,7 @@ const ChatScreen = ({ navigation, route }) => {
             } else {
                 const value = await AsyncStorage.getItem('user_chat_history');
                 let chatsHistory = value ? JSON.parse(value) : [];
-                const characterChat = chatsHistory.find(chat => chat?.chat?.id === character.id);
+                const characterChat = chatsHistory.find((chat) => chat?.chat?.id === character.id);
                 if (characterChat) {
                     existingMessages = characterChat.chat.messages;
                     chatExists = true;
@@ -89,14 +89,14 @@ const ChatScreen = ({ navigation, route }) => {
                                 ]);
                                 // Delete the existing chat history
                                 await deleteChatHistory();
-                            }
+                            },
                         },
                         {
                             text: "Continue",
                             onPress: () => {
                                 setMessages(existingMessages);
-                            }
-                        }
+                            },
+                        },
                     ],
                     { cancelable: false }
                 );
@@ -156,11 +156,11 @@ const ChatScreen = ({ navigation, route }) => {
         ]);
 
         setRecommendationsVisible(true);
-    }
+    };
 
     const saveChatMessages = async () => {
         // Check if there are any user messages
-        const userMessagesExist = messages.some(message => message.role === "user");
+        const userMessagesExist = messages.some((message) => message.role === "user");
         if (!userMessagesExist) return; // If no user messages, do not save
 
         try {
@@ -172,22 +172,22 @@ const ChatScreen = ({ navigation, route }) => {
                     ...existingData,
                     [character.id]: {
                         ...character,
-                        messages: messages
-                    }
+                        messages: messages,
+                    },
                 };
                 await setDoc(docRef, updatedData);
             } else {
                 const value = await AsyncStorage.getItem('user_chat_history');
                 let chatsHistory = value ? JSON.parse(value) : [];
 
-                const index = chatsHistory.findIndex(chat => chat?.chat?.id === character.id);
+                const index = chatsHistory.findIndex((chat) => chat?.chat?.id === character.id);
                 if (index !== -1) {
                     chatsHistory[index].chat.messages = messages;
                 } else {
                     chatsHistory.push({
                         chat: {
                             ...character,
-                            messages: messages
+                            messages: messages,
                         },
                     });
                 }
@@ -202,7 +202,7 @@ const ChatScreen = ({ navigation, route }) => {
         try {
             let updatedFavorites = [];
             if (favorites.includes(character.id)) {
-                updatedFavorites = favorites.filter(fav => fav !== character.id);
+                updatedFavorites = favorites.filter((fav) => fav !== character.id);
             } else {
                 updatedFavorites = [...favorites, character.id];
             }
@@ -351,9 +351,14 @@ const ChatScreen = ({ navigation, route }) => {
                 }}
             >
                 <MyChatTopBar
-                    messages={messages} favorites={favorites} character={character}
-                    saveChatMessages={saveChatMessages} deleteChatHistory={deleteChatHistory} 
-                    restartChat={restartChat} toggleFavorite={toggleFavorite} />
+                    messages={messages}
+                    favorites={favorites}
+                    character={character}
+                    saveChatMessages={saveChatMessages}
+                    deleteChatHistory={deleteChatHistory}
+                    restartChat={restartChat}
+                    toggleFavorite={toggleFavorite}
+                />
 
                 <ScrollView ref={ScrollViewRef} className="flex-1 px-5 py-3">
                     {messages.map((message, i) => (

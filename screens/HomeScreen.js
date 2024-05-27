@@ -211,7 +211,7 @@ const HomeScreen = ({ navigation }) => {
                 </View>
             )}
 
-            <View className="flex-row pr-4 py-2">
+            <View className="flex-row py-2">
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} className="p-2">
                     <TouchableOpacity
                         onPress={() => handleCategoryPress(null)}

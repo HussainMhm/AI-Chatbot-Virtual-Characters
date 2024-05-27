@@ -1,88 +1,73 @@
 import React, { useState, useEffect } from "react";
-import { TextInput, TouchableOpacity, Platform, KeyboardAvoidingView, View } from "react-native";
+import {
+    TextInput,
+    TouchableOpacity,
+    Platform,
+    KeyboardAvoidingView,
+    View,
+    Alert,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Audio } from "expo-av";
-
-const GOOGLE_CLOUD_FUNCTION_URL = "YOUR_GOOGLE_CLOUD_FUNCTION_URL_HERE";
+import Voice from "@react-native-voice/voice";
 
 const MyChatInputBar = ({ messageText, setMessageText, sendMessage }) => {
-    const [recording, setRecording] = useState();
-    const [permissionResponse, requestPermission] = Audio.usePermissions();
+    const [recording, setRecording] = useState(false);
 
     useEffect(() => {
-        askForMicrophonePermission();
+        Voice.onSpeechStart = onSpeechStart;
+        Voice.onSpeechEnd = onSpeechEnd;
+        Voice.onSpeechResults = onSpeechResults;
+        Voice.onSpeechPartialResults = onSpeechPartialResults; // Handle partial results
+        Voice.onSpeechError = onSpeechError;
+
+        return () => {
+            Voice.destroy().then(Voice.removeAllListeners);
+        };
     }, []);
 
-    async function askForMicrophonePermission() {
-        const { status } = await requestPermission();
-        if (status !== "granted") {
-            console.log("Microphone permission not granted");
-        }
-    }
+    const onSpeechStart = (e) => {
+        console.log("onSpeechStart: ", e);
+        setRecording(true);
+    };
 
-    async function startRecording() {
-        const recordingOptions = {
-            android: {
-                extension: ".m4a",
-                outputFormat: Audio.RECORDING_OPTION_ANDROID_OUTPUT_FORMAT_MPEG_4,
-                audioEncoder: Audio.RECORDING_OPTION_ANDROID_AUDIO_ENCODER_AAC,
-                sampleRate: 44100,
-                numberOfChannels: 2,
-                bitRate: 128000,
-            },
-            ios: {
-                extension: ".wav",
-                audioQuality: Audio.RECORDING_OPTION_IOS_AUDIO_QUALITY_HIGH,
-                sampleRate: 44100,
-                numberOfChannels: 1,
-                bitRate: 128000,
-                linearPCMBitDepth: 16,
-                linearPCMIsBigEndian: false,
-                linearPCMIsFloat: false,
-            },
-        };
+    const onSpeechEnd = (e) => {
+        console.log("onSpeechEnd: ", e);
+        setRecording(false);
+    };
 
-        const recording = new Audio.Recording();
+    const onSpeechResults = (e) => {
+        console.log("onSpeechResults: ", e);
+        const speechText = e.value[0];
+        setMessageText(speechText);
+    };
+
+    const onSpeechPartialResults = (e) => {
+        console.log("onSpeechPartialResults: ", e);
+        const speechText = e.value[0];
+        setMessageText(speechText); // Update the text input with partial results
+    };
+
+    const onSpeechError = (e) => {
+        console.log("onSpeechError: ", e);
+        setRecording(false);
+        Alert.alert("Error", "An error occurred during speech recognition.");
+    };
+
+    const startRecording = async () => {
         try {
-            await recording.prepareToRecordAsync(recordingOptions);
-            await recording.startAsync();
-            console.log("Recording started");
-            setRecording(recording);
-        } catch (error) {
-            console.error("Failed to start recording", error);
+            await Voice.start("en-US");
+        } catch (e) {
+            console.error(e);
         }
-    }
+    };
 
-    async function stopRecording() {
-        console.log("Stopping recording..");
-        setRecording(undefined);
-        await recording.stopAndUnloadAsync();
-        const uri = recording.getURI();
-        console.log("Recording stopped and stored at", uri);
-
-        sendAudioToGoogleCloud(uri);
-    }
-
-    async function sendAudioToGoogleCloud(uri) {
-        const formData = new FormData();
-        formData.append("file", {
-            uri,
-            type: "audio/x-wav",
-            name: "speech2text",
-        });
+    const stopRecording = async () => {
         try {
-            const response = await fetch(GOOGLE_CLOUD_FUNCTION_URL, {
-                method: "POST",
-                body: formData,
-            });
-            const data = await response.json();
-            console.log("Transcribed text:", data.transcript);
-            // Use the transcribed text in your application
-            setMessageText(data.transcript);
-        } catch (error) {
-            console.error("Error sending audio to Google Cloud:", error);
+            await Voice.stop();
+        } catch (e) {
+            console.error(e);
         }
-    }
+    };
 
     return (
         <KeyboardAvoidingView
