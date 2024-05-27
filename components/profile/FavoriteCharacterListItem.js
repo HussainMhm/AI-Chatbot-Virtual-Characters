@@ -4,49 +4,44 @@ import { View, Text, Image, TouchableOpacity } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getImage } from "../../helpers";
+import { doc, setDoc } from "firebase/firestore";
+import { FIREBASE_DB } from "../../firebaseConfig";
 
-const FavoriteCharacterListItem = ({ character, onToggleFavorite }) => {
+
+const FavoriteCharacterListItem = ({ user, character, favorites, onToggleFavorite }) => {
     const navigation = useNavigation();
     const [isFavorite, setIsFavorite] = useState(false);
 
-    useEffect(() => {
-        checkIfFavorite();
-    }, []);
-
-    const checkIfFavorite = async () => {
-        try {
-            const value = await AsyncStorage.getItem("favorite-characters");
-            const favoriteCharacters = JSON.parse(value);
-            if (Array.isArray(favoriteCharacters)) {
-                setIsFavorite(favoriteCharacters.some((c) => c.id === character.id));
-            }
-        } catch (e) {
-            console.log(`Failed to check favorite characters:`, e);
+    useEffect(()=>{
+        if(favorites.includes(character.id)){
+            setIsFavorite(true);
         }
-    };
+    }, [character])
 
     const toggleFavorite = async () => {
         try {
-            const value = await AsyncStorage.getItem("favorite-characters");
-            let favoriteCharacters = value ? JSON.parse(value) : [];
-            favoriteCharacters = Array.isArray(favoriteCharacters) ? favoriteCharacters : [];
-
-            const index = favoriteCharacters.findIndex((c) => c?.id === character.id);
-            if (index !== -1) {
-                favoriteCharacters.splice(index, 1);
+            let updatedFavorites = [];
+            if (favorites.includes(character.id)) {
+                updatedFavorites = favorites.filter(fav => fav !== character.id);
                 setIsFavorite(false);
             } else {
-                favoriteCharacters.push(character);
+                updatedFavorites = [...favorites, character.id];
                 setIsFavorite(true);
             }
 
-            const jsonValue = JSON.stringify(favoriteCharacters);
-            await AsyncStorage.setItem("favorite-characters", jsonValue);
-            if (onToggleFavorite) {
-                onToggleFavorite(); // Notify parent component to refresh the list
+            if (user) {
+                const docRef = doc(FIREBASE_DB, "user_favorites", user.uid);
+                await setDoc(docRef, { favorites: updatedFavorites });
+            } else {
+                await AsyncStorage.setItem('user_favorites', JSON.stringify(updatedFavorites));
             }
-        } catch (e) {
-            console.log(`Failed to save favorite characters. ${e}`);
+
+            if (onToggleFavorite) {
+                onToggleFavorite(character?.id); // Notify parent component to refresh the list
+            }
+
+        } catch (error) {
+            console.error("Error updating favorites:", error);
         }
     };
 
@@ -64,13 +59,13 @@ const FavoriteCharacterListItem = ({ character, onToggleFavorite }) => {
         >
             <Image
                 source={
-                    character?.image_path
+                    character?.image_path?.startsWith('assets/')
                         ? getImage(character?.id)
                         : {
-                              uri:
-                                  character?.photo ??
-                                  "https://randomuser.me/api/portraits/med/men/1.jpg",
-                          }
+                            uri:
+                                character?.image_path ??
+                                "https://randomuser.me/api/portraits/med/men/1.jpg",
+                        }
                 }
                 className="w-24 h-24 rounded-full "
             />

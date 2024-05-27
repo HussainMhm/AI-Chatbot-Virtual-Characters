@@ -1,9 +1,10 @@
 import { useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { View, Text, Image, TouchableOpacity } from "react-native";
 import { getImage } from "../helpers";
 
-const MyChatListItem = ({ character }) => {
+const MyChatListItem = ({ character, onDelete }) => {
     const navigation = useNavigation();
 
     // Function to navigate to Chat screen
@@ -21,13 +22,13 @@ const MyChatListItem = ({ character }) => {
         >
             <Image
                 source={
-                    character?.image_path
+                    character?.image_path?.startsWith('assets/')
                         ? getImage(character?.id)
                         : {
-                              uri:
-                                  character?.photo ??
-                                  "https://randomuser.me/api/portraits/med/men/1.jpg",
-                          }
+                            uri:
+                                character?.image_path ??
+                                "https://randomuser.me/api/portraits/med/men/1.jpg",
+                        }
                 }
                 className="w-24 h-24 rounded-full "
             />
@@ -40,26 +41,29 @@ const MyChatListItem = ({ character }) => {
                     {character?.name?.length > 18
                         ? character?.name.substring(0, 18) + "..."
                         : character?.name == ""
-                        ? "Character"
-                        : character?.name}
+                            ? "Character"
+                            : character?.name}
                 </Text>
                 <Text className="text-gray-400 mt-2">
-                    {character?.description
-                        ? character.description.length > 90
-                            ? character.description.substring(0, 90) + "..."
-                            : character.description
-                        : character.messages &&
-                          character.messages.length > 0 &&
-                          character.messages[character.messages.length - 1].content
-                        ? character.messages[character.messages.length - 1].content.length > 90
-                            ? character.messages[character.messages.length - 1].content.substring(
-                                  0,
-                                  90
-                              ) + "..."
-                            : character.messages[character.messages.length - 1].content
-                        : "No Messages"}
+                    {character?.messages && character?.messages?.length > 0 && character?.messages[character?.messages?.length - 1].content
+                        ? character?.messages[character.messages.length - 1].content?.length > 90
+                            ? character?.messages[character?.messages?.length - 1]?.content.substring(
+                                0,
+                                90
+                            ) + "..."
+                            : character?.messages[character?.messages?.length - 1].content
+                        : character?.assistant_content
+                            ? character?.assistant_content?.length > 90
+                                ? character?.assistant_content.substring(0, 90) + "..."
+                                : character?.assistant_content
+                            : "No Messages"}
                 </Text>
             </View>
+            {onDelete && (
+                <TouchableOpacity onPress={onDelete}>
+                    <Ionicons name="trash" size={24} color="white" />
+                </TouchableOpacity>
+            )}
         </TouchableOpacity>
     );
 };

@@ -43,8 +43,7 @@ const AuthenticationScreen = ({ navigation, route }) => {
         signInWithEmailAndPassword(FIREBASE_AUTH, email, password)
             .then((userCredential) => {
                 // Signed in
-                console.log("User signed in:", userCredential.user);
-                // Navigate or manage UI state
+                navigation.navigate("Profile")
             })
             .catch((error) => {
                 console.error("Error signing in:", error.message);

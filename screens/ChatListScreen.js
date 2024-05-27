@@ -28,15 +28,16 @@ const ChatListScreen = () => {
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (currentUser) => {
+            if (currentUser) {
+                getChatsHistory();
+            }else {
+                getChatsHistoryFromLocal();
+            }
             setUser(currentUser);
         });
 
         return () => unsubscribe();
     }, []);
-
-    useEffect(() => {
-        getChatsHistory();
-    }, [user]);
 
     useFocusEffect(
         React.useCallback(() => {
@@ -44,34 +45,32 @@ const ChatListScreen = () => {
         }, [user])
     );
 
-    useFocusEffect(
-        React.useCallback(() => {
-            getChatsHistory();
-        }, [])
-    );
-
     const getChatsHistory = async () => {
         try {
-            if (user) {
-                const docRef = doc(FIREBASE_DB, "user_chat_history", user.uid);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    console.log(data);
-                    const history = Object.values(data);
-                    setChatsHistory(Array.isArray(history) ? history : []);
-                } else {
-                    setChatsHistory([]);
-                }
-            } else {
-                const value = await AsyncStorage.getItem('chats-history');
-                const history = JSON.parse(value);
+            const docRef = doc(FIREBASE_DB, "user_chat_history", user.uid);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                const history = Object.values(data);
                 setChatsHistory(Array.isArray(history) ? history : []);
+            } else {
+                setChatsHistory([]);
             }
         } catch (e) {
             console.log(`Failed to get chat history:`, e);
         }
     }
+
+    const getChatsHistoryFromLocal = async () => {
+        try {
+            const value = await AsyncStorage.getItem('user_chat_history');
+            const history = JSON.parse(value);
+            setChatsHistory(Array.isArray(history) ? history : []);
+        } catch (e) {
+            console.log(`Failed to get chat history from local storage:`, e);
+        }
+    }
+
 
     return (
         <SafeAreaView

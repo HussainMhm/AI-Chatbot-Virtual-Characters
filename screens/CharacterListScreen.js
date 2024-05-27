@@ -2,47 +2,62 @@ import { View, Text, SafeAreaView, Platform, StatusBar, TouchableOpacity, Scroll
 
 import MyHeader from "../components/MyHeader";
 import React, { useEffect, useState } from "react";
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import MyChatListItem from "../components/MyChatListItem";
+import { onAuthStateChanged } from "firebase/auth";
+import { FIREBASE_DB, FIREBASE_AUTH } from "../firebaseConfig";
 import { useFocusEffect } from "@react-navigation/native";
+import { collection, query, where, getDocs, deleteDoc, doc } from "firebase/firestore";
 
 const CharacterListScreen = ({ navigation, route }) => {
     const [newCharacters, setNewCharacters] = useState([]);
+    const [user, setUser] = useState(null);
 
     useEffect(() => {
-        getNewCharacters();
-    }, [])
+        const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (currentUser) => {
+            setUser(currentUser);
+            if (currentUser) {
+                loadNewCharacters(currentUser);
+            }
+        });
+
+        return () => unsubscribe();
+    }, []);
 
     useFocusEffect(
         React.useCallback(() => {
-            getNewCharacters();
-            getChatsHistory();
-        }, [])
+            if (user) {
+                loadNewCharacters(user);
+            }
+        }, [user])
     );
 
-    const getNewCharacters = async () => {
+    const loadNewCharacters = async (currentUser) => {
         try {
-            const value = await AsyncStorage.getItem('new-characters');
-            setNewCharacters(value ? JSON.parse(value) : [])
+            const q = query(collection(FIREBASE_DB, "characters"), where("userId", "==", currentUser.uid));
+            const querySnapshot = await getDocs(q);
+            const characters = querySnapshot.docs.map(doc => ({
+                ...doc.data(),
+                id: doc.id // Ensure each character has an id property
+            }));
+            setNewCharacters(characters);
         } catch (e) {
-            console.log(`failed to get new characters ${e}`);
+            console.log(`Failed to fetch new characters: ${e}`);
         }
-    }
+    };
+
+    const handleDeleteCharacter = async (characterId) => {
+        try {
+            await deleteDoc(doc(FIREBASE_DB, "characters", characterId));
+            console.log(characterId);
+            setNewCharacters(newCharacters.filter(character => character.id !== characterId));
+        } catch (e) {
+            console.log(`Failed to delete character: ${e}`);
+        }
+    };
 
     const handleCreateCharacter = () => {
         navigation.navigate("CreateCharacter");
     };
-
-    const getChatsHistory = async () => {
-        try {
-            const value = await AsyncStorage.getItem('chats-history');
-            const history = JSON.parse(value);
-            console.log(history);
-            setChatsHistory(Array.isArray(history) ? history : []);
-        } catch (e) {
-            console.log(`Failed to get chat history:`, e);
-        }
-    }
 
     return (
         <SafeAreaView
@@ -61,6 +76,7 @@ const CharacterListScreen = ({ navigation, route }) => {
                             <MyChatListItem
                                 key={index}
                                 character={character}
+                                onDelete={() => handleDeleteCharacter(character.id)}
                             />
                         ))}
                     </ScrollView>

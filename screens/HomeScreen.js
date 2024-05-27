@@ -28,15 +28,17 @@ const HomeScreen = ({ navigation }) => {
     const [activeCategory, setActiveCategory] = useState(-1);
     const [categoryWithCharacters, setCategoryWithCharacters] = useState([]);
     const [filterdCategoryWithCharacters, setFilterdCategoryWithCharacters] = useState([]);
-
     const [favorites, setFavorites] = useState([]);
-
     const [user, setUser] = useState(null);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (currentUser) => {
+            if (currentUser){
+                loadFavorites();
+            }else {
+                loadFavoritesFromLocal()
+            }
             setUser(currentUser);
-            loadFavorites();
         });
 
         return () => unsubscribe();
@@ -45,7 +47,7 @@ const HomeScreen = ({ navigation }) => {
     useFocusEffect(
         React.useCallback(() => {
             loadFavorites();
-        }, [])
+        }, [user])
     );
 
     const listTypes = {
@@ -104,7 +106,7 @@ const HomeScreen = ({ navigation }) => {
                 const docRef = doc(FIREBASE_DB, "user_favorites", user.uid);
                 await setDoc(docRef, { favorites: updatedFavorites });
             } else {
-                await AsyncStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+                await AsyncStorage.setItem('user_favorites', JSON.stringify(updatedFavorites));
             }
         } catch (error) {
             console.error("Error updating favorites:", error);
@@ -113,22 +115,27 @@ const HomeScreen = ({ navigation }) => {
 
     const loadFavorites = async () => {
         try {
-            if (user) {
-                const docRef = doc(FIREBASE_DB, "user_favorites", user.uid);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    setFavorites(data.favorites || []);
-                }
-            } else {
-                const value = await AsyncStorage.getItem('favorites');
-                let favoriteCharacters = value ? JSON.parse(value) : [];
-                setFavorites(favoriteCharacters);
+            const docRef = doc(FIREBASE_DB, "user_favorites", user.uid);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                setFavorites(data.favorites || []);
             }
         } catch (error) {
             console.error("Error loading favorites:", error);
         }
     };
+
+    const loadFavoritesFromLocal = async () => {
+        try {   
+            const value = await AsyncStorage.getItem('user_favorites');
+            let favoriteCharacters = value ? JSON.parse(value) : [];
+            setFavorites(favoriteCharacters);
+        } catch (error) {
+            console.error("Error loading favorites:", error);
+        }
+    };
+    
 
     useEffect(() => {
         // Initialize the state with characters combined with categories

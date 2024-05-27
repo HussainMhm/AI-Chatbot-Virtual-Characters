@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     View,
     Text,
@@ -9,20 +9,21 @@ import {
     StatusBar,
     ScrollView,
     Image,
-    Button,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Picker } from "@react-native-picker/picker";
 import { Ionicons } from "@expo/vector-icons";
 import CountryFlag from "react-native-country-flag";
 
-import MyHeader from "../components/MyHeader";
 import countriesData from "../data/countries";
 import categoriesData from "../data/categories";
 import MyProgressIndicator from "../components/MyProgressIndicator";
-
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
+
+import { setDoc, addDoc, collection } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+import { FIREBASE_DB, FIREBASE_AUTH } from "../firebaseConfig";
+
 
 const CharacterBuilder = ({ navigation }) => {
     // Step state and handler
@@ -53,7 +54,18 @@ const CharacterBuilder = ({ navigation }) => {
     const [characterHometown, setCharacterHometown] = useState("");
     const [characterInterests, setCharacterInterests] = useState([]);
     const [characterFirstMessage, setCharacterFirstMessage] = useState("");
-    const [characterCategory, setCharacterCategory] = useState("");
+    const [characterCategory, setCharacterCategory] = useState(0);
+
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (currentUser) => {
+            setUser(currentUser);
+        });
+
+        return () => unsubscribe();
+    }, []);
+    
 
     // List of interests and emojis
     const interestsList = [
@@ -121,7 +133,7 @@ const CharacterBuilder = ({ navigation }) => {
             firstMessage: characterFirstMessage,
             category: characterCategory,
         };
-        await saveNewCharcter(newCharacter);
+        await saveNewCharacter(newCharacter);
 
         // Navigate back or show a success message
         navigation.goBack();
@@ -133,17 +145,17 @@ const CharacterBuilder = ({ navigation }) => {
         }, [])
     );
 
-    const convertCharacterToSystemFormat = (character) => {
-        const { age, hometown, interests, name, description, firstMessage, photo } = character;
+    const convertCharacterToSystemFormat = (character, id) => {
+        const { age, hometown, interests, name, description, firstMessage, photo, category} = character;
 
         const systemContent = `${description} \n- Age: ${age} \n- Hometown: ${hometown} \n- Interests: ${interests.join(
             ", "
         )}.`;
 
         return {
-            id: -1,
+            id: id,
             name: name,
-            category_id: -1,
+            category_id: category,
             system_content: systemContent,
             assistant_content: firstMessage,
             image_path: photo ?? "https://randomuser.me/api/portraits/med/men/1.jpg",
@@ -151,31 +163,24 @@ const CharacterBuilder = ({ navigation }) => {
         };
     };
 
-    const saveNewCharcter = async (newCharacter) => {
+    const saveNewCharacter = async (newCharacter) => {
         try {
-            const value = await AsyncStorage.getItem("new-characters");
+            if (user) {
+                const docRef = await addDoc(collection(FIREBASE_DB, "characters"), newCharacter);
+                // Convert the character to the system format
+                const convertedCharacter = convertCharacterToSystemFormat(newCharacter, docRef.id);
+                
+                // Add userId to the new character object
+                const characterWithUserId = { ...convertedCharacter, userId: user.uid };
 
-            let newCharacters = [];
-
-            if (value != null) {
-                newCharacters = JSON.parse(value);
-
-                // If the value is not an array, make it an array
-                if (!Array.isArray(newCharacters)) {
-                    newCharacters = [newCharacters];
-                }
+                // Update the document with the converted character
+                await setDoc(docRef, characterWithUserId);
             }
-
-            if (newCharacter) {
-                newCharacters.push(convertCharacterToSystemFormat(newCharacter));
-            }
-
-            const jsonValue = JSON.stringify(newCharacters);
-            await AsyncStorage.setItem("new-characters", jsonValue);
         } catch (e) {
             console.log(`Failed to save new character. ${e}`);
         }
     };
+    
 
     const renderTitleAndDescription = (title, description) => {
         return (
@@ -222,8 +227,6 @@ const CharacterBuilder = ({ navigation }) => {
                         aspect: [4, 3],
                         quality: 1,
                     });
-
-                    console.log(result);
 
                     if (!result.canceled) {
                         setCharacterPhoto(result.assets[0].uri);

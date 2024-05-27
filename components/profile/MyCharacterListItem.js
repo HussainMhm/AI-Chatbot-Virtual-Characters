@@ -21,13 +21,13 @@ const MyCharacterListItem = ({ character }) => {
         >
             <Image
                 source={
-                    character?.image_path
+                    character?.image_path?.startsWith('assets/')
                         ? getImage(character?.id)
                         : {
-                              uri:
-                                  character?.photo ??
-                                  "https://randomuser.me/api/portraits/med/men/1.jpg",
-                          }
+                            uri:
+                                character?.image_path ??
+                                "https://randomuser.me/api/portraits/med/men/1.jpg",
+                        }
                 }
                 className="w-24 h-24 rounded-full "
             />
