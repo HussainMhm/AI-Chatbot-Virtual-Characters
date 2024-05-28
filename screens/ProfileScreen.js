@@ -116,7 +116,8 @@ const ProfileScreen = () => {
     const loadChatsHistoryFromLocal = async () => {
         try {
             const value = await AsyncStorage.getItem('user_chat_history');
-            const history = JSON.parse(value);
+            const data = JSON.parse(value);
+            const history = Object.values(data);
             setChatsHistory(Array.isArray(history) ? history : []);
         } catch (e) {
             console.log(`Failed to get chat history from local storage:`, e);

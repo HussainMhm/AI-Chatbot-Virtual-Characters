@@ -47,7 +47,11 @@ const ChatListScreen = ({ navigation }) => {
 
     useFocusEffect(
         React.useCallback(() => {
-            getChatsHistory();
+            if (user){
+                getChatsHistory();
+            }else {
+                getChatsHistoryFromLocal();
+            }
         }, [user])
     );
 
@@ -72,7 +76,8 @@ const ChatListScreen = ({ navigation }) => {
     const getChatsHistoryFromLocal = async () => {
         try {
             const value = await AsyncStorage.getItem("user_chat_history");
-            const history = JSON.parse(value);
+            const data = JSON.parse(value);
+            const history = Object.values(data);
             setChatsHistory(Array.isArray(history) ? history : []);
             setFilteredChats(Array.isArray(history) ? history : []);
         } catch (e) {

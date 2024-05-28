@@ -57,7 +57,12 @@ const HomeScreen = ({ navigation }) => {
     // Load favorites when screen is focused
     useFocusEffect(
         React.useCallback(() => {
-            loadFavorites();
+            if (user) {
+                loadFavorites(user);
+            } else {
+                loadFavoritesFromLocal();
+            }
+
         }, [user])
     );
 

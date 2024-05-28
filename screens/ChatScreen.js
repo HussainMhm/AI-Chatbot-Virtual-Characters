@@ -53,8 +53,9 @@ const ChatScreen = ({ navigation, route }) => {
         try {
             let chatExists = false;
             let existingMessages = [];
-
+    
             if (user) {
+                // Firebase logic
                 const docRef = doc(FIREBASE_DB, "user_chat_history", user.uid);
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
@@ -65,15 +66,15 @@ const ChatScreen = ({ navigation, route }) => {
                     }
                 }
             } else {
+                // Local storage logic
                 const value = await AsyncStorage.getItem("user_chat_history");
-                let chatsHistory = value ? JSON.parse(value) : [];
-                const characterChat = chatsHistory.find((chat) => chat?.chat?.id === character.id);
-                if (characterChat) {
-                    existingMessages = characterChat.chat.messages;
+                let chatsHistory = value ? JSON.parse(value) : {};
+                if (chatsHistory[character.id]) {
+                    existingMessages = chatsHistory[character.id].messages;
                     chatExists = true;
                 }
             }
-
+    
             if (chatExists) {
                 Alert.alert(
                     "Chat History Found",
@@ -104,7 +105,7 @@ const ChatScreen = ({ navigation, route }) => {
         } catch (error) {
             console.error("Error loading chat history:", error);
         }
-    };
+    };    
 
     const loadFavorites = async () => {
         try {
@@ -128,6 +129,7 @@ const ChatScreen = ({ navigation, route }) => {
     const deleteChatHistory = async () => {
         try {
             if (user) {
+                // Firebase delete logic
                 const docRef = doc(FIREBASE_DB, "user_chat_history", user.uid);
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
@@ -138,9 +140,12 @@ const ChatScreen = ({ navigation, route }) => {
                     }
                 }
             } else {
+                // Local storage delete logic
                 const value = await AsyncStorage.getItem("user_chat_history");
-                let chatsHistory = value ? JSON.parse(value) : [];
-                chatsHistory = chatsHistory.filter((chat) => chat?.chat?.id !== character.id);
+                let chatsHistory = value ? JSON.parse(value) : {};
+                if (chatsHistory[character.id]) {
+                    delete chatsHistory[character.id];
+                }
                 await AsyncStorage.setItem("user_chat_history", JSON.stringify(chatsHistory));
             }
             restartChat();
@@ -148,6 +153,7 @@ const ChatScreen = ({ navigation, route }) => {
             console.error("Error deleting chat history:", error);
         }
     };
+    
 
     const restartChat = () => {
         setMessages([
@@ -162,9 +168,10 @@ const ChatScreen = ({ navigation, route }) => {
         // Check if there are any user messages
         const userMessagesExist = messages.some((message) => message.role === "user");
         if (!userMessagesExist) return; // If no user messages, do not save
-
+    
         try {
             if (user) {
+                // Firebase save logic
                 const docRef = doc(FIREBASE_DB, "user_chat_history", user.uid);
                 const docSnap = await getDoc(docRef);
                 const existingData = docSnap.exists() ? docSnap.data() : {};
@@ -177,26 +184,22 @@ const ChatScreen = ({ navigation, route }) => {
                 };
                 await setDoc(docRef, updatedData);
             } else {
+                // Local storage save logic
                 const value = await AsyncStorage.getItem("user_chat_history");
-                let chatsHistory = value ? JSON.parse(value) : [];
-
-                const index = chatsHistory.findIndex((chat) => chat?.chat?.id === character.id);
-                if (index !== -1) {
-                    chatsHistory[index].chat.messages = messages;
-                } else {
-                    chatsHistory.push({
-                        chat: {
-                            ...character,
-                            messages: messages,
-                        },
-                    });
-                }
+                let chatsHistory = value ? JSON.parse(value) : {};
+    
+                chatsHistory[character.id] = {
+                    ...character,
+                    messages: messages,
+                };
+    
                 await AsyncStorage.setItem("user_chat_history", JSON.stringify(chatsHistory));
             }
         } catch (error) {
             console.error("Error saving chats history:", error);
         }
     };
+    
 
     const toggleFavorite = async () => {
         try {
