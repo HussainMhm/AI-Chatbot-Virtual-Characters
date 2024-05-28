@@ -22,6 +22,9 @@ import { FIREBASE_DB, FIREBASE_AUTH } from "../firebaseConfig";
 import { apiCall } from "../api/openAi";
 import { getImage } from "../helpers/index";
 
+// import * as Speech from 'expo-speech';
+
+
 const ChatScreen = ({ navigation, route }) => {
     const { character } = route.params;
     const [messages, setMessages] = useState([
@@ -122,7 +125,7 @@ const ChatScreen = ({ navigation, route }) => {
                 setFavorites(favoriteCharacters);
             }
         } catch (error) {
-            console.error("Error loading favorites:", error);
+            console.error("Error loading favorites from chat screen:", error);
         }
     };
 
@@ -222,6 +225,17 @@ const ChatScreen = ({ navigation, route }) => {
         }
     };
 
+    const speakText = (text) => {
+        if (text) {
+            Speech.speak(text, {
+                language: 'en',
+                pitch: 1.0,
+                rate: 1.0,
+            });
+        }
+    };
+
+    
     const sendMessage = () => {
         if (messageText.trim().length > 0) {
             let newMessages = [...messages];
@@ -236,6 +250,7 @@ const ChatScreen = ({ navigation, route }) => {
                 if (res?.success) {
                     setLoading(false);
                     setMessages([...res.data]);
+                    // speakText(res.data[res.data.length - 1].content);
                     updateScrollView();
                 } else {
                     Alert.alert("Error", res.msg);
@@ -258,6 +273,7 @@ const ChatScreen = ({ navigation, route }) => {
             if (res?.success) {
                 setLoading(false);
                 setMessages([...res.data]);
+                // speakText(res.data[res.data.length - 1].content);
                 updateScrollView();
             } else {
                 Alert.alert("Error", res.msg);

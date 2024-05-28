@@ -57,19 +57,21 @@ const ChatListScreen = ({ navigation }) => {
 
     const getChatsHistory = async () => {
         try {
-            const docRef = doc(FIREBASE_DB, "user_chat_history", user.uid);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                const history = Object.values(data);
-                setChatsHistory(Array.isArray(history) ? history : []);
-                setFilteredChats(Array.isArray(history) ? history : []);
-            } else {
-                setChatsHistory([]);
-                setFilteredChats([]);
+            if(user?.uid){
+                const docRef = doc(FIREBASE_DB, "user_chat_history", user.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const history = Object.values(data);
+                    setChatsHistory(Array.isArray(history) ? history : []);
+                    setFilteredChats(Array.isArray(history) ? history : []);
+                } else {
+                    setChatsHistory([]);
+                    setFilteredChats([]);
+                }
             }
         } catch (e) {
-            console.log(`Failed to get chat history:`, e);
+            console.log(`Failed to get chat history from ChatListScreen:`, e);
         }
     };
 

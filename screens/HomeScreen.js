@@ -139,7 +139,7 @@ const HomeScreen = ({ navigation }) => {
                 setFavorites(data.favorites || []);
             }
         } catch (error) {
-            console.error("Error loading favorites:", error);
+            console.error("Error loading favorites from home screen:", error);
         }
     };
 
@@ -149,7 +149,7 @@ const HomeScreen = ({ navigation }) => {
             let favoriteCharacters = value ? JSON.parse(value) : [];
             setFavorites(favoriteCharacters);
         } catch (error) {
-            console.error("Error loading favorites:", error);
+            console.error("Error loading favorites from local home screen:", error);
         }
     };
  
