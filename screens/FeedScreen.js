@@ -22,8 +22,6 @@ const FeedScreen = () => {
     const swiper = useRef(null);
     const navigation = useNavigation();
 
-    console.log("Current: ", currentCard);
-
     useEffect(() => {
         setCards(characters.characters);
     }, []);

@@ -48,7 +48,7 @@ const ProfileScreen = () => {
 
     useFocusEffect(
         React.useCallback(() => {
-            if (user) {
+            if (user && user?.uid) {
                 loadChatsHistory();
                 loadFavorites();
                 loadNewCharacters();
@@ -76,14 +76,16 @@ const ProfileScreen = () => {
 
     const loadFavorites = async () => {
         try {
-            const docRef = doc(FIREBASE_DB, "user_favorites", user.uid);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                setFavoritesIds(data.favorites || []);
+            if (user?.uid){
+                const docRef = doc(FIREBASE_DB, "user_favorites", user.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    setFavoritesIds(data.favorites || []);
+                }
             }
         } catch (error) {
-            console.error("Error loading favorites:", error);
+            console.error("Error loading favorites from profile:", error);
         }
     };
 
@@ -93,23 +95,25 @@ const ProfileScreen = () => {
             let favoriteIds = value ? JSON.parse(value) : [];
             setFavoritesIds(favoriteIds);
         } catch (error) {
-            console.error("Error loading favorites:", error);
+            console.error("Error loading favorites from local profile screen:", error);
         }
     };
 
     const loadChatsHistory = async () => {
         try {
-            const docRef = doc(FIREBASE_DB, "user_chat_history", user.uid);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                const history = Object.values(data);
-                setChatsHistory(Array.isArray(history) ? history : []);
-            } else {
-                setChatsHistory([]);
+            if (user?.uid){
+                const docRef = doc(FIREBASE_DB, "user_chat_history", user.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const history = Object.values(data);
+                    setChatsHistory(Array.isArray(history) ? history : []);
+                } else {
+                    setChatsHistory([]);
+                }
             }
         } catch (e) {
-            console.log(`Failed to get chat history:`, e);
+            console.log(`Failed to get chat history from profile screen:`, e);
         }
     }
 
@@ -120,7 +124,7 @@ const ProfileScreen = () => {
             const history = Object.values(data);
             setChatsHistory(Array.isArray(history) ? history : []);
         } catch (e) {
-            console.log(`Failed to get chat history from local storage:`, e);
+            console.log(`Failed to get chat history from local storage profile screen:`, e);
         }
     }
 
