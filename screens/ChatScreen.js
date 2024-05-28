@@ -21,9 +21,9 @@ import MyChatInputBar from "../components/MyChatInputBar";
 import { FIREBASE_DB, FIREBASE_AUTH } from "../firebaseConfig";
 import { apiCall } from "../api/openAi";
 import { getImage } from "../helpers/index";
+import { set } from "firebase/database";
 
 // import * as Speech from 'expo-speech';
-
 
 const ChatScreen = ({ navigation, route }) => {
     const { character } = route.params;
@@ -60,6 +60,10 @@ const ChatScreen = ({ navigation, route }) => {
                 displayMessageGradually(lastMessage.content);
             }
         }
+
+        // Check if there are any user messages and hide recommendations if there are
+        const userMessagesExist = messages.some((message) => message.role === "user");
+        setRecommendationsVisible(!userMessagesExist);
     }, [messages]);
 
     const loadChatHistory = async () => {
@@ -198,6 +202,7 @@ const ChatScreen = ({ navigation, route }) => {
             } else {
                 // Local storage save logic
                 const value = await AsyncStorage.getItem("user_chat_history");
+                console.log("user_chat_history: ", value);
                 let chatsHistory = value ? JSON.parse(value) : {};
 
                 chatsHistory[character.id] = {
@@ -236,14 +241,13 @@ const ChatScreen = ({ navigation, route }) => {
     const speakText = (text) => {
         if (text) {
             Speech.speak(text, {
-                language: 'en',
+                language: "en",
                 pitch: 1.0,
                 rate: 1.0,
             });
         }
     };
 
-    
     const sendMessage = () => {
         if (messageText.trim().length > 0) {
             let newMessages = [...messages];
@@ -265,6 +269,7 @@ const ChatScreen = ({ navigation, route }) => {
                 }
             });
             setMessageText("");
+            setRecommendationsVisible(false);
         }
     };
 
@@ -303,7 +308,7 @@ const ChatScreen = ({ navigation, route }) => {
             setTimeout(() => {
                 displayedContent += (i > 0 ? " " : "") + word;
                 setLatestMessage(displayedContent);
-            }, i * 100); // Adjust the delay as needed
+            }, i * 10); // Adjust the delay as needed
         });
     };
 
