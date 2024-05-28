@@ -11,10 +11,10 @@ import {
     TouchableOpacity,
     Image,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import LottieView from "lottie-react-native";
 
 import MyChatTopBar from "../components/MyChatTopBar";
 import MyChatInputBar from "../components/MyChatInputBar";
@@ -33,6 +33,7 @@ const ChatScreen = ({ navigation, route }) => {
     const [recommendationsVisible, setRecommendationsVisible] = useState(true);
     const [user, setUser] = useState(null);
     const [favorites, setFavorites] = useState([]);
+    const [latestMessage, setLatestMessage] = useState("");
 
     const ScrollViewRef = useRef();
 
@@ -49,11 +50,20 @@ const ChatScreen = ({ navigation, route }) => {
         loadFavorites();
     }, [character.id, user]);
 
+    useEffect(() => {
+        if (messages.length > 0) {
+            const lastMessage = messages[messages.length - 1];
+            if (lastMessage.role === "assistant" && lastMessage.content.length > 0) {
+                displayMessageGradually(lastMessage.content);
+            }
+        }
+    }, [messages]);
+
     const loadChatHistory = async () => {
         try {
             let chatExists = false;
             let existingMessages = [];
-    
+
             if (user) {
                 // Firebase logic
                 const docRef = doc(FIREBASE_DB, "user_chat_history", user.uid);
@@ -74,7 +84,7 @@ const ChatScreen = ({ navigation, route }) => {
                     chatExists = true;
                 }
             }
-    
+
             if (chatExists) {
                 Alert.alert(
                     "Chat History Found",
@@ -105,7 +115,7 @@ const ChatScreen = ({ navigation, route }) => {
         } catch (error) {
             console.error("Error loading chat history:", error);
         }
-    };    
+    };
 
     const loadFavorites = async () => {
         try {
@@ -153,7 +163,6 @@ const ChatScreen = ({ navigation, route }) => {
             console.error("Error deleting chat history:", error);
         }
     };
-    
 
     const restartChat = () => {
         setMessages([
@@ -168,7 +177,7 @@ const ChatScreen = ({ navigation, route }) => {
         // Check if there are any user messages
         const userMessagesExist = messages.some((message) => message.role === "user");
         if (!userMessagesExist) return; // If no user messages, do not save
-    
+
         try {
             if (user) {
                 // Firebase save logic
@@ -187,19 +196,18 @@ const ChatScreen = ({ navigation, route }) => {
                 // Local storage save logic
                 const value = await AsyncStorage.getItem("user_chat_history");
                 let chatsHistory = value ? JSON.parse(value) : {};
-    
+
                 chatsHistory[character.id] = {
                     ...character,
                     messages: messages,
                 };
-    
+
                 await AsyncStorage.setItem("user_chat_history", JSON.stringify(chatsHistory));
             }
         } catch (error) {
             console.error("Error saving chats history:", error);
         }
     };
-    
 
     const toggleFavorite = async () => {
         try {
@@ -272,6 +280,17 @@ const ChatScreen = ({ navigation, route }) => {
         });
     };
 
+    const displayMessageGradually = (content) => {
+        const words = content.split(" ");
+        let displayedContent = "";
+        words.forEach((word, i) => {
+            setTimeout(() => {
+                displayedContent += (i > 0 ? " " : "") + word;
+                setLatestMessage(displayedContent);
+            }, i * 100); // Adjust the delay as needed
+        });
+    };
+
     const renderMessage = (message, index) => {
         if (message.role === "user") {
             return (
@@ -297,12 +316,14 @@ const ChatScreen = ({ navigation, route }) => {
                     </View>
                 );
             } else if (message.content.length > 0) {
+                const displayedContent =
+                    index === messages.length - 1 ? latestMessage : message.content;
                 return (
                     <View
                         key={index}
                         className="bg-[#1b1b1b] py-4 px-6 rounded-3xl mb-3 mr-10 self-start"
                     >
-                        <Text className="text-white text-base">{message.content}</Text>
+                        <Text className="text-white text-base">{displayedContent}</Text>
                     </View>
                 );
             } else {
@@ -377,8 +398,13 @@ const ChatScreen = ({ navigation, route }) => {
                     ))}
 
                     {loading && (
-                        <View className="bg-gray-800 py-3 px-4 rounded-2xl mb-2 self-start">
-                            <Ionicons name="ellipsis-horizontal" size={24} color="white" />
+                        <View className="bg-[#1b1b1b] p-1 px-2 rounded-2xl mb-2 self-start">
+                            <LottieView
+                                source={require("../assets/animations/typingIndicator.json")}
+                                autoPlay
+                                loop
+                                style={{ width: 50, height: 50 }}
+                            />
                         </View>
                     )}
                 </ScrollView>
