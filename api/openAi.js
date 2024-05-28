@@ -6,22 +6,32 @@ const client = axios.create({
         "Authorization": `Bearer ${API_KEY}`,
         "Content-Type": "application/json",
     }
-})
+});
 
-const chatGbtEndpoint = `${API_URL}v1/chat/completions`
-const dalleEndpoint = `${API_URL}v1/images/generations`
+const chatGbtEndpoint = `${API_URL}v1/chat/completions`;
+const dalleEndpoint = `${API_URL}v1/images/generations`;
 
 export const apiCall = async (prompt, messages) => {
     try {
-        const res = await client.post(chatGbtEndpoint, {
+        // Improved classification
+        const classificationPrompt = `
+            Given the following prompt: "${prompt}"
+            Determine if this prompt is requesting to generate an image or if it is a regular chat conversation.
+            Respond with only one word: "art" if it is related to generating an image, or "chat" if it is a regular conversation.
+        `;
+
+        const classificationRes = await client.post(chatGbtEndpoint, {
             model: 'gpt-3.5-turbo',
             messages: [{
                 role: 'user',
-                content: `Is this an art-related request or a chat? ${prompt} . Reply 'art' for art-related, 'chat' for chatting.`
-            }]
-        })
-        const isArt = res.data?.choices[0]?.message?.content.toLowerCase().includes('art');
-        systemPrompt = `
+                content: classificationPrompt
+            }],
+            max_tokens: 10 // Ensure the response is very short
+        });
+
+        const isArt = classificationRes.data?.choices[0]?.message?.content.toLowerCase().trim() === 'art';
+
+        const systemPrompt = `
         As an AI character, you are endowed with a specific set of characteristics and a defined historical context:
 
         1. **Full Character Immersion**: Embody your character completely, adopting their persona, speech patterns, and viewpoints in every interaction.
@@ -38,27 +48,28 @@ export const apiCall = async (prompt, messages) => {
         
         7. **Avoid Negatives**: Always strive to provide answers, steering clear of responses like "I don't know" or "I can't."
         
-        Ensure your interactions are not only historically accurate but also truly reflective of the character's essence, engaging users in a meaningful and educational dialogue.
+        8. **Token Limit**: Ensure your responses do not exceed 150 tokens to maintain concise and clear communication.
         
-        `
+        9. **Response Length**: Keep responses short and to the point unless the user specifically requests more detail or a longer explanation.
+
+        Ensure your interactions are not only historically accurate but also truly reflective of the character's essence, engaging users in a meaningful and educational dialogue.
+        `;
+
         messages.push({
             role: 'system',
-            content: systemPrompt
+            content: systemPrompt.trim()
         });
-        console.log(messages);
-        // if (isArt) {
-        //     console.log('dalle api call');
-        //     return dalleApiCall(prompt, messages || [])
-        // } else {
-            console.log('chat gpt api call');
-            return chatApiCall(prompt, messages || [])
-        // }
-    } catch (error) {
-        console.log(error);
-        return Promise.resolve({ success: false, msg: error.message })
-    }
-}
 
+        if (isArt) {
+            return dalleApiCall(prompt, messages || []);
+        } else {
+            return chatApiCall(prompt, messages || []);
+        }
+    } catch (error) {
+        console.error(error);
+        return Promise.resolve({ success: false, msg: error.message });
+    }
+};
 
 const chatApiCall = async (prompt, messages) => {
     try {
@@ -66,17 +77,17 @@ const chatApiCall = async (prompt, messages) => {
             model: 'gpt-3.5-turbo',
             messages: messages,
             temperature: 0.5,
-            max_tokens: 150
+            max_tokens: 150 // Keep the token limit to 150
         });
 
         let answer = res.data?.choices[0]?.message?.content;
         messages.push({ role: 'assistant', content: answer.trim() });
         return Promise.resolve({ success: true, data: messages });
     } catch (err) {
-        console.log('error: ', err);
+        console.error('error: ', err);
         return Promise.resolve({ success: false, msg: err.message });
     }
-}
+};
 
 const dalleApiCall = async (prompt, messages) => {
     try {
@@ -91,7 +102,7 @@ const dalleApiCall = async (prompt, messages) => {
         messages.push({ role: 'assistant', content: url });
         return Promise.resolve({ success: true, data: messages });
     } catch (err) {
-        console.log('error: ', err);
+        console.error('error: ', err);
         return Promise.resolve({ success: false, msg: err.message });
     }
-}
+};

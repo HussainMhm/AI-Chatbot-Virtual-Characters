@@ -132,11 +132,13 @@ const HomeScreen = ({ navigation }) => {
     // Load favorites from Firebase or AsyncStorage
     const loadFavorites = async () => {
         try {
-            const docRef = doc(FIREBASE_DB, "user_favorites", user.uid);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                setFavorites(data.favorites || []);
+            if(user?.uid){
+                const docRef = doc(FIREBASE_DB, "user_favorites", user.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    setFavorites(data.favorites || []);
+                }
             }
         } catch (error) {
             console.error("Error loading favorites from home screen:", error);
