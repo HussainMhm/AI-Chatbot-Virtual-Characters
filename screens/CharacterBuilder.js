@@ -25,7 +25,6 @@ import { setDoc, addDoc, collection } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { FIREBASE_DB, FIREBASE_AUTH } from "../firebaseConfig";
 
-
 const CharacterBuilder = ({ navigation }) => {
     // Step state and handler
     const [step, setStep] = useState(1);
@@ -106,7 +105,13 @@ const CharacterBuilder = ({ navigation }) => {
 
         return () => unsubscribe();
     }, []);
-    
+
+    const defaultImages = [
+        "https://randomuser.me/api/portraits/men/1.jpg",
+        "https://randomuser.me/api/portraits/women/1.jpg",
+        "https://randomuser.me/api/portraits/men/2.jpg",
+        "https://randomuser.me/api/portraits/women/2.jpg",
+    ];
 
     // List of interests and emojis
     const interestsList = [
@@ -186,7 +191,8 @@ const CharacterBuilder = ({ navigation }) => {
     );
 
     const convertCharacterToSystemFormat = (character, id) => {
-        const { age, hometown, interests, name, description, firstMessage, photo, category} = character;
+        const { age, hometown, interests, name, description, firstMessage, photo, category } =
+            character;
 
         const systemContent = `${description} \n- Age: ${age} \n- Hometown: ${hometown} \n- Interests: ${interests.join(
             ", "
@@ -209,7 +215,7 @@ const CharacterBuilder = ({ navigation }) => {
                 const docRef = await addDoc(collection(FIREBASE_DB, "characters"), newCharacter);
                 // Convert the character to the system format
                 const convertedCharacter = convertCharacterToSystemFormat(newCharacter, docRef.id);
-                
+
                 // Add userId to the new character object
                 const characterWithUserId = { ...convertedCharacter, userId: user.uid };
 
@@ -220,7 +226,6 @@ const CharacterBuilder = ({ navigation }) => {
             console.log(`Failed to save new character. ${e}`);
         }
     };
-    
 
     const renderTitleAndDescription = (title, description) => {
         return (

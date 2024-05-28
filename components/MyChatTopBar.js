@@ -4,12 +4,20 @@ import { FontAwesome5, SimpleLineIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-const MyChatTopBar = ({ messages, favorites, character, saveChatMessages, deleteChatHistory, restartChat, toggleFavorite }) => {
+const MyChatTopBar = ({
+    messages,
+    favorites,
+    character,
+    saveChatMessages,
+    deleteChatHistory,
+    restartChat,
+    toggleFavorite,
+}) => {
     const navigation = useNavigation();
     const [modalVisible, setModalVisible] = useState(false);
 
     const goBack = () => {
-        const userMessagesExist = messages.some(message => message.role === "user");
+        const userMessagesExist = messages.some((message) => message.role === "user");
         if (userMessagesExist) {
             Alert.alert(
                 "Save Chat",
@@ -64,7 +72,7 @@ const MyChatTopBar = ({ messages, favorites, character, saveChatMessages, delete
             console.error("Error archiving chat:", error);
         }
     };
-    
+
     const deleteChat = async () => {
         try {
             deleteChatHistory();
@@ -73,24 +81,6 @@ const MyChatTopBar = ({ messages, favorites, character, saveChatMessages, delete
             console.error("Error deleting chat history:", error);
         }
     };
-
-    // const rateChat = () => {
-    //     Alert.prompt(
-    //         "Rate Chat",
-    //         "Please rate this chat from 1 to 5 stars:",
-    //         [
-    //             {
-    //                 text: "Submit",
-    //                 onPress: (rating) => {
-    //                     console.log(`Rating submitted: ${rating}`);
-    //                     Alert.alert("Thank you!", `You rated this chat ${rating} stars.`);
-    //                 }
-    //             }
-    //         ],
-    //         "plain-text"
-    //     );
-    // };
-
 
     return (
         <View className="flex-row items-center p-4">
@@ -117,41 +107,46 @@ const MyChatTopBar = ({ messages, favorites, character, saveChatMessages, delete
                 visible={modalVisible}
                 onRequestClose={() => setModalVisible(false)}
             >
-
                 <View style={styles.modalOverlay}>
-                    <View
-                        style={styles.modalContainer}>
+                    <View style={styles.modalContainer}>
                         <TouchableOpacity
                             style={styles.modalOption}
                             onPress={() => handleOptionPress("Archive & Re-Start Chat")}
                         >
-                            <SimpleLineIcons name="arrow-down-circle" size={24} color="white" style={styles.icon} />
+                            <SimpleLineIcons
+                                name="arrow-down-circle"
+                                size={24}
+                                color="white"
+                                style={styles.icon}
+                            />
                             <Text style={styles.modalOptionText}>Archive & Re-Start Chat</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={styles.modalOption}
                             onPress={() => handleOptionPress("Delete & Re-Start Chat")}
                         >
-                            <SimpleLineIcons name="trash" size={24} color="white" style={styles.icon} />
+                            <SimpleLineIcons
+                                name="trash"
+                                size={24}
+                                color="white"
+                                style={styles.icon}
+                            />
                             <Text style={styles.modalOptionText}>Delete & Re-Start Chat</Text>
                         </TouchableOpacity>
-                        {/* <TouchableOpacity
-                            style={styles.modalOption}
-                            onPress={() => handleOptionPress("Rate Chat")}
-                        >
-                            <SimpleLineIcons name="star" size={24} color="white" style={styles.icon} />
-                            <Text style={styles.modalOptionText}>Rate Chat</Text>
-                        </TouchableOpacity> */}
                         <TouchableOpacity
                             style={styles.modalOption}
                             onPress={() => handleOptionPress("Add to Favorites")}
                         >
-                            <MaterialCommunityIcons name={favorites.includes(character.id) ? "heart" : "heart-outline"} size={24} color="white" style={styles.icon} />
+                            <MaterialCommunityIcons
+                                name={favorites.includes(character.id) ? "heart" : "heart-outline"}
+                                size={24}
+                                color="white"
+                                style={styles.icon}
+                            />
                             <Text style={styles.modalOptionText}>Add to Favorites</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
-
             </Modal>
         </View>
     );
