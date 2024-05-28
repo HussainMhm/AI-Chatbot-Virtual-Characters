@@ -308,7 +308,7 @@ const ChatScreen = ({ navigation, route }) => {
             setTimeout(() => {
                 displayedContent += (i > 0 ? " " : "") + word;
                 setLatestMessage(displayedContent);
-            }, i * 10); // Adjust the delay as needed
+            }, i * 100); // Adjust the delay as needed
         });
     };
 
