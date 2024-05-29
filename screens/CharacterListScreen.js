@@ -33,13 +33,15 @@ const CharacterListScreen = ({ navigation, route }) => {
 
     const loadNewCharacters = async (currentUser) => {
         try {
-            const q = query(collection(FIREBASE_DB, "characters"), where("userId", "==", currentUser.uid));
-            const querySnapshot = await getDocs(q);
-            const characters = querySnapshot.docs.map(doc => ({
-                ...doc.data(),
-                id: doc.id // Ensure each character has an id property
-            }));
-            setNewCharacters(characters);
+            if (user?.uid){
+                const q = query(collection(FIREBASE_DB, "characters"), where("userId", "==", currentUser.uid));
+                const querySnapshot = await getDocs(q);
+                const characters = querySnapshot.docs.map(doc => ({
+                    ...doc.data(),
+                    id: doc.id // Ensure each character has an id property
+                }));
+                setNewCharacters(characters);
+            }
         } catch (e) {
             console.log(`Failed to fetch new characters: ${e}`);
         }

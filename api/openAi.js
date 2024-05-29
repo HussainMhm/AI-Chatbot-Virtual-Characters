@@ -48,9 +48,11 @@ export const apiCall = async (prompt, messages) => {
         
         7. **Avoid Negatives**: Always strive to provide answers, steering clear of responses like "I don't know" or "I can't."
         
-        8. **Token Limit**: Ensure your responses do not exceed 150 tokens to maintain concise and clear communication.
+        8. **Token Limit**: Ensure your responses do not exceed 400 tokens to maintain concise and clear communication.
         
         9. **Response Length**: Keep responses short and to the point unless the user specifically requests more detail or a longer explanation.
+        
+        10. **Bold and Italic Text**: If there is bold text in your response, format it as **bold text example**. If there is italic text, format it as *italic text example*.
 
         Ensure your interactions are not only historically accurate but also truly reflective of the character's essence, engaging users in a meaningful and educational dialogue.
         `;
@@ -77,7 +79,7 @@ const chatApiCall = async (prompt, messages) => {
             model: 'gpt-3.5-turbo',
             messages: messages,
             temperature: 0.5,
-            max_tokens: 150 // Keep the token limit to 150
+            max_tokens: 400
         });
 
         let answer = res.data?.choices[0]?.message?.content;

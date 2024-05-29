@@ -10,6 +10,7 @@ import {
     Alert,
     TouchableOpacity,
     Image,
+    Switch,
 } from "react-native";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
@@ -22,7 +23,9 @@ import { FIREBASE_DB, FIREBASE_AUTH } from "../firebaseConfig";
 import { apiCall } from "../api/openAi";
 import { getImage } from "../helpers/index";
 
-// import * as Speech from 'expo-speech';
+import { Audio } from 'expo-av';
+import * as FileSystem from 'expo-file-system';
+import * as Speech from 'expo-speech';
 
 
 const ChatScreen = ({ navigation, route }) => {
@@ -37,10 +40,16 @@ const ChatScreen = ({ navigation, route }) => {
     const [user, setUser] = useState(null);
     const [favorites, setFavorites] = useState([]);
     const [latestMessage, setLatestMessage] = useState("");
+    const [audioDuration, setAudioDuration] = useState(100);
+
+    // Add a state variable to track voice rendering
+    const [voiceEnabled, setVoiceEnabled] = useState(false);
 
     const ScrollViewRef = useRef();
 
     useEffect(() => {
+        loadVoiceEnabled();
+
         const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (currentUser) => {
             setUser(currentUser);
         });
@@ -57,10 +66,31 @@ const ChatScreen = ({ navigation, route }) => {
         if (messages.length > 0) {
             const lastMessage = messages[messages.length - 1];
             if (lastMessage.role === "assistant" && lastMessage.content.length > 0) {
-                displayMessageGradually(lastMessage.content);
+                displayMessageGradually(lastMessage.content, audioDuration);
             }
         }
-    }, [messages]);
+    }, [messages, audioDuration]);
+
+    const loadVoiceEnabled = async () => {
+        try {
+            const voiceEnabledValue = await AsyncStorage.getItem('voiceEnabled');
+            if (voiceEnabledValue !== null) {
+                setVoiceEnabled(JSON.parse(voiceEnabledValue));
+            } else {
+                setVoiceEnabled(false);
+            }
+        } catch (error) {
+            console.error('Error loading voiceEnabled from AsyncStorage:', error);
+        }
+    };
+
+    useEffect(() => {
+        console.log(voiceEnabled);
+        if (!voiceEnabled) {
+            Speech.stop();
+            setAudioDuration(100);
+        }
+    }, [voiceEnabled])
 
     const loadChatHistory = async () => {
         try {
@@ -243,7 +273,87 @@ const ChatScreen = ({ navigation, route }) => {
         }
     };
 
-    
+    // Helper function to convert blob to base64
+    const blobToBase64 = (blob) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    };
+
+    const speakTextApi = async (text, messages) => {
+        if (text) {
+            try {
+                const url = "https://api.elevenlabs.io/v1/text-to-speech/XRlny9TzSxQhHzOusWWe";
+                const headers = {
+                    "Accept": "audio/mpeg",
+                    "Content-Type": "application/json",
+                    "xi-api-key": "054fbe3f91ce98fe5cb817adb8efed1d"
+                };
+                const data = {
+                    "text": text,
+                    "model_id": "eleven_monolingual_v1",
+                    "voice_settings": {
+                        "stability": 0.5,
+                        "similarity_boost": 0.5
+                    }
+                };
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch audio');
+                }
+
+                const audioContent = await response.blob();
+                const base64Audio = await blobToBase64(audioContent);
+                const uri = FileSystem.cacheDirectory + 'audio.mp3';
+
+                // Save the base64 audio content to a file
+                await FileSystem.writeAsStringAsync(uri, base64Audio, { encoding: FileSystem.EncodingType.Base64 });
+
+                // Load and play the audio
+                const { sound, status } = await Audio.Sound.createAsync(
+                    { uri: uri },
+                    { shouldPlay: true }
+                );
+
+                // Set isLoading to false after starting the audio
+                setLoading(false);
+
+                await sound.playAsync();
+
+                // Calculate audio duration
+                const audioDuration = status.durationMillis;
+                setAudioDuration(audioDuration)
+            } catch (error) {
+                console.log('Error in speakText:', error);
+                // Fallback to expo-speach if API fails
+                speakText(text);
+                // Set isLoading to false if there's an error
+                setLoading(false);
+            }
+        }
+        // Set messages after handling the audio and loading state
+        setMessages(messages);
+    };
+
+    const toggleVoice = async () => {
+        const newVoiceEnabled = !voiceEnabled;
+        setVoiceEnabled(newVoiceEnabled);
+        try {
+            await AsyncStorage.setItem('voiceEnabled', JSON.stringify(newVoiceEnabled));
+        } catch (error) {
+            console.error('Error saving voiceEnabled to AsyncStorage:', error);
+        }
+    };
+
     const sendMessage = () => {
         if (messageText.trim().length > 0) {
             let newMessages = [...messages];
@@ -256,9 +366,15 @@ const ChatScreen = ({ navigation, route }) => {
             setLoading(true);
             apiCall(messageText.trim(), newMessages).then((res) => {
                 if (res?.success) {
-                    setLoading(false);
-                    setMessages([...res.data]);
-                    // speakText(res.data[res.data.length - 1].content);
+                    // Conditionally render messages with or without voice
+                    if (voiceEnabled) {
+                        // Render messages with voice
+                        speakTextApi(res.data[res.data.length - 1].content, [...res.data]);
+                    } else {
+                        // Render messages without voice
+                        setLoading(false);
+                        setMessages([...res.data]);
+                    }
                     updateScrollView();
                 } else {
                     Alert.alert("Error", res.msg);
@@ -279,9 +395,15 @@ const ChatScreen = ({ navigation, route }) => {
         setLoading(true);
         apiCall(recommendation, newMessages).then((res) => {
             if (res?.success) {
-                setLoading(false);
-                setMessages([...res.data]);
-                // speakText(res.data[res.data.length - 1].content);
+                // Conditionally render messages with or without voice
+                if (voiceEnabled) {
+                    // Render messages with voice
+                    speakTextApi(res.data[res.data.length - 1].content, [...res.data]);
+                } else {
+                    // Render messages without voice
+                    setLoading(false);
+                    setMessages([...res.data]);
+                }
                 updateScrollView();
             } else {
                 Alert.alert("Error", res.msg);
@@ -296,15 +418,55 @@ const ChatScreen = ({ navigation, route }) => {
         });
     };
 
-    const displayMessageGradually = (content) => {
-        const words = content.split(" ");
+    const displayMessageGradually = async (content, audioDuration) => {
+        const words = content.split(/\s+/); // Split by whitespace
         let displayedContent = "";
-        words.forEach((word, i) => {
-            setTimeout(() => {
-                displayedContent += (i > 0 ? " " : "") + word;
-                setLatestMessage(displayedContent);
-            }, i * 100); // Adjust the delay as needed
+
+        for (let i = 0; i < words.length; i++) {
+            displayedContent += (i > 0 ? " " : "") + words[i];
+            setLatestMessage(displayedContent);
+
+            // Adjust timing based on word length
+            const wordDuration = audioDuration / content.length * words[i].length;
+            await new Promise(resolve => setTimeout(resolve, wordDuration));
+        }
+    };
+
+    const parseMarkdown = (text) => {
+        const regex = /(\*\*|__)(.*?)\1|(\*|_)(.*?)\3/g;
+        let segments = [];
+        let lastIndex = 0;
+
+        text.replace(regex, (match, p1, p2, p3, p4, offset) => {
+            if (lastIndex < offset) {
+                segments.push({
+                    text: text.substring(lastIndex, offset),
+                    style: {},
+                });
+            }
+
+            if (p2) {
+                segments.push({
+                    text: p2,
+                    style: { fontWeight: "bold" },
+                });
+            } else if (p4) {
+                segments.push({
+                    text: p4,
+                    style: { fontStyle: "italic" },
+                });
+            }
+
+            lastIndex = offset + match.length;
         });
+
+        if (lastIndex < text.length) {
+            segments.push({
+                text: text.substring(lastIndex),
+                style: {},
+            });
+        }
+        return segments;
     };
 
     const renderMessage = (message, index) => {
@@ -334,12 +496,23 @@ const ChatScreen = ({ navigation, route }) => {
             } else if (message.content.length > 0) {
                 const displayedContent =
                     index === messages.length - 1 ? latestMessage : message.content;
+
+                const segments = parseMarkdown(displayedContent);
+
                 return (
                     <View
                         key={index}
                         className="bg-[#1b1b1b] py-4 px-6 rounded-3xl mb-3 mr-10 self-start"
                     >
-                        <Text className="text-white text-base">{displayedContent}</Text>
+                        <Text className="text-white text-base">
+                            {
+                                segments.map((segment, i) => (
+                                    <Text key={i} style={segment.style}>
+                                        {segment.text}
+                                    </Text>
+                                ))
+                            }
+                        </Text>
                     </View>
                 );
             } else {
@@ -384,10 +557,10 @@ const ChatScreen = ({ navigation, route }) => {
                 character?.image_path?.startsWith("assets/")
                     ? getImage(character?.id)
                     : {
-                          uri:
-                              character?.image_path ??
-                              "https://randomuser.me/api/portraits/med/men/1.jpg",
-                      }
+                        uri:
+                            character?.image_path ??
+                            "https://randomuser.me/api/portraits/med/men/1.jpg",
+                    }
             }
             className="flex-1"
             resizeMode="cover"
@@ -407,6 +580,17 @@ const ChatScreen = ({ navigation, route }) => {
                     restartChat={restartChat}
                     toggleFavorite={toggleFavorite}
                 />
+
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
+                    <Text style={{ marginRight: 10 }}>Voice Rendering</Text>
+                    <Switch
+                        trackColor={{ false: "#767577", true: "#81b0ff" }}
+                        thumbColor={voiceEnabled ? "#f5dd4b" : "#f4f3f4"}
+                        ios_backgroundColor="#3e3e3e"
+                        onValueChange={toggleVoice}
+                        value={voiceEnabled}
+                    />
+                </View>
 
                 <ScrollView ref={ScrollViewRef} className="flex-1 px-5 py-3">
                     {messages.map((message, i) => (
