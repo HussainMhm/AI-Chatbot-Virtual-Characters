@@ -22,6 +22,7 @@ import MyChatInputBar from "../components/MyChatInputBar";
 import { FIREBASE_DB, FIREBASE_AUTH } from "../firebaseConfig";
 import { apiCall } from "../api/openAi";
 import { getImage } from "../helpers/index";
+import { set } from "firebase/database";
 
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
@@ -69,6 +70,11 @@ const ChatScreen = ({ navigation, route }) => {
                 displayMessageGradually(lastMessage.content, audioDuration);
             }
         }
+
+        // Check if there are any user messages and hide recommendations if there are
+        const userMessagesExist = messages.some((message) => message.role === "user");
+        setRecommendationsVisible(!userMessagesExist);
+    }, [messages]);
     }, [messages, audioDuration]);
 
     const loadVoiceEnabled = async () => {
@@ -228,6 +234,7 @@ const ChatScreen = ({ navigation, route }) => {
             } else {
                 // Local storage save logic
                 const value = await AsyncStorage.getItem("user_chat_history");
+                console.log("user_chat_history: ", value);
                 let chatsHistory = value ? JSON.parse(value) : {};
 
                 chatsHistory[character.id] = {
@@ -266,7 +273,7 @@ const ChatScreen = ({ navigation, route }) => {
     const speakText = (text) => {
         if (text) {
             Speech.speak(text, {
-                language: 'en',
+                language: "en",
                 pitch: 1.0,
                 rate: 1.0,
             });
@@ -381,6 +388,7 @@ const ChatScreen = ({ navigation, route }) => {
                 }
             });
             setMessageText("");
+            setRecommendationsVisible(false);
         }
     };
 

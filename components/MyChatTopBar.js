@@ -1,5 +1,14 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Modal, StyleSheet, ScrollView, Alert } from "react-native";
+import {
+    View,
+    Text,
+    TouchableOpacity,
+    Modal,
+    StyleSheet,
+    ScrollView,
+    Alert,
+    TouchableWithoutFeedback,
+} from "react-native";
 import { FontAwesome5, SimpleLineIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -107,77 +116,63 @@ const MyChatTopBar = ({
                 visible={modalVisible}
                 onRequestClose={() => setModalVisible(false)}
             >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContainer}>
-                        <TouchableOpacity
-                            style={styles.modalOption}
-                            onPress={() => handleOptionPress("Archive & Re-Start Chat")}
-                        >
-                            <SimpleLineIcons
-                                name="arrow-down-circle"
-                                size={24}
-                                color="white"
-                                style={styles.icon}
-                            />
-                            <Text style={styles.modalOptionText}>Archive & Re-Start Chat</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={styles.modalOption}
-                            onPress={() => handleOptionPress("Delete & Re-Start Chat")}
-                        >
-                            <SimpleLineIcons
-                                name="trash"
-                                size={24}
-                                color="white"
-                                style={styles.icon}
-                            />
-                            <Text style={styles.modalOptionText}>Delete & Re-Start Chat</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={styles.modalOption}
-                            onPress={() => handleOptionPress("Add to Favorites")}
-                        >
-                            <MaterialCommunityIcons
-                                name={favorites.includes(character.id) ? "heart" : "heart-outline"}
-                                size={24}
-                                color="white"
-                                style={styles.icon}
-                            />
-                            <Text style={styles.modalOptionText}>Add to Favorites</Text>
-                        </TouchableOpacity>
+                <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+                    <View
+                        className="flex-1 justify-end"
+                        style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+                    >
+                        <View className="bg-[#0F0F0F] rounded-t-3xl p-4 py-10 space-y-4">
+                            <TouchableOpacity
+                                className="flex-row items-center p-5 rounded-3xl bg-[#1B1B1B]"
+                                onPress={() => handleOptionPress("Archive & Re-Start Chat")}
+                            >
+                                <SimpleLineIcons
+                                    name="arrow-down-circle"
+                                    size={24}
+                                    color="white"
+                                    style={styles.icon}
+                                />
+                                <Text className="text-white ml-4 text-lg">
+                                    Archive & Re-Start Chat
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                className="flex-row items-center p-5 rounded-3xl bg-[#1B1B1B]"
+                                onPress={() => handleOptionPress("Delete & Re-Start Chat")}
+                            >
+                                <SimpleLineIcons
+                                    name="trash"
+                                    size={24}
+                                    color="white"
+                                    style={styles.icon}
+                                />
+                                <Text className="text-white ml-4 text-lg">
+                                    Delete & Re-Start Chat
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                className="flex-row items-center p-5 rounded-3xl bg-[#1B1B1B]"
+                                onPress={() => handleOptionPress("Add to Favorites")}
+                            >
+                                <MaterialCommunityIcons
+                                    name={
+                                        favorites.includes(character.id) ? "heart" : "heart-outline"
+                                    }
+                                    size={24}
+                                    color="white"
+                                    style={styles.icon}
+                                />
+                                <Text className="text-white ml-4 text-lg">Add to Favorites</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
-                </View>
+                </TouchableWithoutFeedback>
             </Modal>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    modalOverlay: {
-        flex: 1,
-        justifyContent: "flex-end",
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
-    },
-    modalContainer: {
-        backgroundColor: "#0F0F0F",
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-        rowGap: 8,
-        paddingTop: 24,
-        padding: 16,
-    },
-    modalOption: {
-        flexDirection: "row",
-        alignItems: "center",
-        padding: 20,
-        borderRadius: 20,
-        backgroundColor: "#1B1B1B",
-    },
-    modalOptionText: {
-        color: "#fff",
-        fontSize: 18,
-        marginLeft: 16,
-    },
     icon: {
         width: 24,
         height: 24,
