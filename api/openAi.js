@@ -11,7 +11,7 @@ const client = axios.create({
 const chatGbtEndpoint = `${API_URL}v1/chat/completions`;
 const dalleEndpoint = `${API_URL}v1/images/generations`;
 
-export const apiCall = async (prompt, messages) => {
+export const apiCall = async (prompt, messages, imageUrl='') => {
     try {
         // Improved classification
         const classificationPrompt = `
@@ -20,16 +20,22 @@ export const apiCall = async (prompt, messages) => {
             Respond with only one word: "art" if it is related to generating an image, or "chat" if it is a regular conversation.
         `;
 
-        const classificationRes = await client.post(chatGbtEndpoint, {
-            model: 'gpt-3.5-turbo',
-            messages: [{
-                role: 'user',
-                content: classificationPrompt
-            }],
-            max_tokens: 10 // Ensure the response is very short
-        });
+        let classificationRes, isArt;
+        
+        if (imageUrl == ''){
 
-        const isArt = classificationRes.data?.choices[0]?.message?.content.toLowerCase().trim() === 'art';
+            classificationRes = await client.post(chatGbtEndpoint, {
+                model: 'gpt-3.5-turbo',
+                messages: [{
+                    role: 'user',
+                    content: classificationPrompt
+                }],
+                max_tokens: 10 // Ensure the response is very short
+            });
+
+            isArt = classificationRes?.data?.choices[0]?.message?.content.toLowerCase().trim() === 'art';
+        }
+
 
         const systemPrompt = `
         As an AI character, you are endowed with a specific set of characteristics and a defined historical context:
@@ -62,10 +68,14 @@ export const apiCall = async (prompt, messages) => {
             content: systemPrompt.trim()
         });
 
-        if (isArt) {
-            return dalleApiCall(prompt, messages || []);
+        if (imageUrl !== ''){
+            return imageAnalysisApiCall(prompt, imageUrl, messages || [])
         } else {
-            return chatApiCall(prompt, messages || []);
+            if (isArt) {
+                return dalleApiCall(prompt, messages || []);
+            } else {
+                return chatApiCall(prompt, messages || []);
+            }
         }
     } catch (error) {
         console.error(error);
@@ -102,6 +112,33 @@ const dalleApiCall = async (prompt, messages) => {
         let url = res.data?.data[0]?.url;
         console.log(`got url of the image ${url}`);
         messages.push({ role: 'assistant', content: url });
+        return Promise.resolve({ success: true, data: messages });
+    } catch (err) {
+        console.error('error: ', err);
+        return Promise.resolve({ success: false, msg: err.message });
+    }
+};
+
+
+const imageAnalysisApiCall = async (prompt, imageUrl, messages) => {
+    try {
+        const res = await client.post(chatGbtEndpoint, {
+            model: 'gpt-4o',
+            messages: [
+                {
+                    role: 'user',
+                    content: [
+                        { type: "text", text: prompt },
+                        { type: "image_url", image_url: { url: imageUrl } }
+                    ]
+                }
+            ],
+            max_tokens: 300
+        });
+
+        let analysis = res.data?.choices[0]?.message?.content;
+
+        messages.push({ role: 'assistant', content: analysis.trim() });
         return Promise.resolve({ success: true, data: messages });
     } catch (err) {
         console.error('error: ', err);

@@ -8,6 +8,7 @@ import {
     ScrollView,
     Alert,
     TouchableWithoutFeedback,
+    Switch,
 } from "react-native";
 import { FontAwesome5, SimpleLineIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -21,6 +22,10 @@ const MyChatTopBar = ({
     deleteChatHistory,
     restartChat,
     toggleFavorite,
+    voiceEnabled,
+    toggleVoice,
+    isExpoVoice,
+    setExpoVoice
 }) => {
     const navigation = useNavigation();
     const [modalVisible, setModalVisible] = useState(false);
@@ -60,9 +65,6 @@ const MyChatTopBar = ({
             case "Delete & Re-Start Chat":
                 await deleteChat();
                 break;
-            // case "Rate Chat":
-            //     rateChat();
-            //     break;
             case "Add to Favorites":
                 toggleFavorite();
                 break;
@@ -122,6 +124,38 @@ const MyChatTopBar = ({
                         style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
                     >
                         <View className="bg-[#0F0F0F] rounded-t-3xl p-4 py-10 space-y-4">
+                            <TouchableOpacity
+                                className="flex-row items-center p-5 rounded-3xl bg-[#1B1B1B]"
+                                onPress={() => toggleVoice()}
+                            >
+                                <Switch
+                                    className="ml-2"
+                                    trackColor={{ false: "#B0B4BA", true: "#0CBF08" }}
+                                    thumbColor={"#FFFFFF"}
+                                    ios_backgroundColor="#3e3e3e"
+                                    onValueChange={toggleVoice}
+                                    value={voiceEnabled}
+                                    style={styles.icon}
+                                />
+                                <Text className="text-white ml-2 text-lg">Voice Speach</Text>
+                            </TouchableOpacity>
+                            {voiceEnabled && (
+                                <TouchableOpacity
+                                    className="flex-row items-center p-5 rounded-3xl bg-[#1B1B1B]"
+                                    onPress={() => setExpoVoice(!isExpoVoice)}
+                                >
+                                    <Switch
+                                        className="ml-2"
+                                        trackColor={{ false: "#B0B4BA", true: "#0CBF08" }}
+                                        thumbColor={"#FFFFFF"}
+                                        ios_backgroundColor="#3e3e3e"
+                                        onValueChange={setExpoVoice}
+                                        value={isExpoVoice}
+                                        style={styles.icon}
+                                    />
+                                    <Text className="text-white ml-2 text-lg">Faster Response</Text>
+                                </TouchableOpacity>
+                            )}
                             <TouchableOpacity
                                 className="flex-row items-center p-5 rounded-3xl bg-[#1B1B1B]"
                                 onPress={() => handleOptionPress("Archive & Re-Start Chat")}

@@ -45,6 +45,9 @@ const ChatScreen = ({ navigation, route }) => {
 
     // Add a state variable to track voice rendering
     const [voiceEnabled, setVoiceEnabled] = useState(false);
+    const [isExpoVoice, setExpoVoice] = useState(true);
+    const [visionImageUrl, setVisionImageUrl] = useState('');
+
 
     const ScrollViewRef = useRef();
 
@@ -74,7 +77,6 @@ const ChatScreen = ({ navigation, route }) => {
         // Check if there are any user messages and hide recommendations if there are
         const userMessagesExist = messages.some((message) => message.role === "user");
         setRecommendationsVisible(!userMessagesExist);
-    }, [messages]);
     }, [messages, audioDuration]);
 
     const loadVoiceEnabled = async () => {
@@ -91,7 +93,6 @@ const ChatScreen = ({ navigation, route }) => {
     };
 
     useEffect(() => {
-        console.log(voiceEnabled);
         if (!voiceEnabled) {
             Speech.stop();
             setAudioDuration(100);
@@ -291,7 +292,10 @@ const ChatScreen = ({ navigation, route }) => {
     };
 
     const speakTextApi = async (text, messages) => {
-        if (text) {
+        if (isExpoVoice) {
+            setLoading(false);
+            speakText(text);
+        } else if (text) {
             try {
                 const url = "https://api.elevenlabs.io/v1/text-to-speech/XRlny9TzSxQhHzOusWWe";
                 const headers = {
@@ -362,16 +366,18 @@ const ChatScreen = ({ navigation, route }) => {
     };
 
     const sendMessage = () => {
+        Speech.stop();
         if (messageText.trim().length > 0) {
             let newMessages = [...messages];
             newMessages.push({
                 role: "user",
                 content: messageText.trim(),
+                imageUrl: visionImageUrl !== '' ? visionImageUrl : null
             });
             setMessages([...newMessages]);
             updateScrollView();
             setLoading(true);
-            apiCall(messageText.trim(), newMessages).then((res) => {
+            apiCall(messageText.trim(), newMessages, visionImageUrl).then((res) => {
                 if (res?.success) {
                     // Conditionally render messages with or without voice
                     if (voiceEnabled) {
@@ -388,6 +394,7 @@ const ChatScreen = ({ navigation, route }) => {
                 }
             });
             setMessageText("");
+            setVisionImageUrl('');
             setRecommendationsVisible(false);
         }
     };
@@ -479,14 +486,30 @@ const ChatScreen = ({ navigation, route }) => {
 
     const renderMessage = (message, index) => {
         if (message.role === "user") {
-            return (
-                <View
-                    key={index}
-                    className="bg-orange-300 py-3 px-4 rounded-2xl mb-3 ml-10 self-end"
-                >
-                    <Text className="text-base">{message.content}</Text>
-                </View>
-            );
+            if (message?.imageUrl) {
+                return (
+                    <View
+                        key={index}
+                        className="bg-orange-300 py-3 px-4 rounded-2xl mb-3 ml-10 self-end"
+                    >
+                        <Image
+                            source={{ uri: message?.imageUrl }}
+                            className="w-full h-40 rounded-2xl"
+                            style={{ width: 200, height: 200, borderRadius: 20 }}
+                        />
+                        <Text className="text-base">{message.content}</Text>
+                    </View>
+                )
+            }else {
+                return (
+                    <View
+                        key={index}
+                        className="bg-orange-300 py-3 px-4 rounded-2xl mb-3 ml-10 self-end"
+                    >
+                        <Text className="text-base">{message.content}</Text>
+                    </View>
+                );
+            }
         } else if (message.role === "assistant") {
             if (message.content.startsWith("https://")) {
                 return (
@@ -587,18 +610,11 @@ const ChatScreen = ({ navigation, route }) => {
                     deleteChatHistory={deleteChatHistory}
                     restartChat={restartChat}
                     toggleFavorite={toggleFavorite}
+                    voiceEnabled={voiceEnabled}
+                    toggleVoice={toggleVoice}
+                    isExpoVoice={isExpoVoice}
+                    setExpoVoice={setExpoVoice}
                 />
-
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
-                    <Text style={{ marginRight: 10 }}>Voice Rendering</Text>
-                    <Switch
-                        trackColor={{ false: "#767577", true: "#81b0ff" }}
-                        thumbColor={voiceEnabled ? "#f5dd4b" : "#f4f3f4"}
-                        ios_backgroundColor="#3e3e3e"
-                        onValueChange={toggleVoice}
-                        value={voiceEnabled}
-                    />
-                </View>
 
                 <ScrollView ref={ScrollViewRef} className="flex-1 px-5 py-3">
                     {messages.map((message, i) => (
@@ -623,6 +639,8 @@ const ChatScreen = ({ navigation, route }) => {
                     messageText={messageText}
                     setMessageText={setMessageText}
                     sendMessage={sendMessage}
+                    visionImageUrl={visionImageUrl}
+                    setVisionImageUrl={setVisionImageUrl}
                 />
             </SafeAreaView>
         </ImageBackground>

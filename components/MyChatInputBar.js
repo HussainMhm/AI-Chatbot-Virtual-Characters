@@ -6,11 +6,21 @@ import {
     KeyboardAvoidingView,
     View,
     Alert,
+    StyleSheet,
+    Image,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import Voice from "@react-native-voice/voice";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-const MyChatInputBar = ({ messageText, setMessageText, sendMessage }) => {
+const MyChatInputBar = ({
+    messageText,
+    setMessageText,
+    sendMessage,
+    visionImageUrl,
+    setVisionImageUrl
+}) => {
     const [recording, setRecording] = useState(false);
 
     useEffect(() => {
@@ -69,11 +79,54 @@ const MyChatInputBar = ({ messageText, setMessageText, sendMessage }) => {
         }
     };
 
+    const pickImage = async () => {
+        // No permissions request is necessary for launching the image library
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.All,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            uploadImageAsync(result.assets[0].uri);
+        } else {
+            clearImage();
+        }
+    };
+
+    const uploadImageAsync = async (uri) => {
+        try {
+            const blob = await fetch(uri).then((res) => res.blob());
+            const storage = getStorage(); // Initialize Firebase storage
+            const storageRef = ref(storage, `images/${Date.now()}`);
+            await uploadBytes(storageRef, blob);
+            const url = await getDownloadURL(storageRef);
+            setVisionImageUrl(url);
+        } catch (error) {
+            console.error("Error uploading image: ", error);
+            Alert.alert("Error", "Failed to upload image. Please try again.");
+            clearImage();
+        }
+    };
+
+    const clearImage = () => {
+        setVisionImageUrl('');
+    };
+
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             className="flex-row items-center px-5 mb-4"
         >
+            {visionImageUrl && (
+                <View style={styles.imagePreviewContainer}>
+                    <Image source={{ uri: visionImageUrl }} style={styles.imagePreview} />
+                    <TouchableOpacity style={styles.clearButton} onPress={clearImage}>
+                        <Ionicons name="close-circle" size={24} color="white" />
+                    </TouchableOpacity>
+                </View>
+            )}
             <View
                 style={{
                     backgroundColor: "rgba(0, 0, 0, 0.7)",
@@ -100,6 +153,9 @@ const MyChatInputBar = ({ messageText, setMessageText, sendMessage }) => {
                         <Ionicons name="mic" size={30} color="white" />
                     </TouchableOpacity>
                 )}
+                <TouchableOpacity style={{ marginLeft: 2 }} onPress={pickImage}>
+                    <MaterialCommunityIcons name="image-search" size={30} color="white" />
+                </TouchableOpacity>
             </View>
 
             <TouchableOpacity className="ml-2" onPress={sendMessage}>
@@ -108,5 +164,22 @@ const MyChatInputBar = ({ messageText, setMessageText, sendMessage }) => {
         </KeyboardAvoidingView>
     );
 };
+
+const styles = StyleSheet.create({
+    imagePreviewContainer: {
+        position: "relative",
+        marginBottom: 10,
+    },
+    imagePreview: {
+        width: 100,
+        height: 100,
+        borderRadius: 10,
+    },
+    clearButton: {
+        position: "absolute",
+        top: -10,
+        right: -10,
+    }
+});
 
 export default MyChatInputBar;
