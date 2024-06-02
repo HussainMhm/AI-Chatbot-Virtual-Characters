@@ -211,7 +211,7 @@ const CharacterBuilder = ({ navigation }) => {
     );
 
     const convertCharacterToSystemFormat = (character, id) => {
-        const { age, hometown, interests, name, description, firstMessage, photo, category } =
+        const { age, hometown, interests, name, description, firstMessage, photo, category, gender } =
             character;
 
         const systemContent = `${description} \n- Age: ${age} \n- Hometown: ${hometown} \n- Interests: ${interests.join(
@@ -226,6 +226,7 @@ const CharacterBuilder = ({ navigation }) => {
             assistant_content: firstMessage,
             image_path: photo ?? "https://randomuser.me/api/portraits/med/men/1.jpg",
             recommendations: [],
+            gender: gender.toLowerCase()
         };
     };
 
