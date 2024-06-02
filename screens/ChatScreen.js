@@ -292,6 +292,12 @@ const ChatScreen = ({ navigation, route }) => {
     };
 
     const speakTextApi = async (text, messages) => {
+        // Regex to identify URLs
+        const urlRegex = /https?:\/\/[^\s]+/g;
+
+        // Replace URLs with an empty string
+        text = text.replace(urlRegex, "");
+
         if (isExpoVoice) {
             setLoading(false);
             speakText(text);
