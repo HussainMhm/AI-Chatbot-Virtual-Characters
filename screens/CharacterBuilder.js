@@ -24,7 +24,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { setDoc, addDoc, collection } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { FIREBASE_DB, FIREBASE_AUTH } from "../firebaseConfig";
-import { getStorage, ref, getDownloadURL } from "firebase/storage"; // Import Firebase storage functions
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Import Firebase storage functions
 
 const CharacterBuilder = ({ navigation }) => {
     // Step state and handler
@@ -311,9 +311,27 @@ const CharacterBuilder = ({ navigation }) => {
                         aspect: [4, 3],
                         quality: 1,
                     });
-
+                
                     if (!result.canceled) {
-                        setCharacterPhoto(result.assets[0].uri);
+                        // Get a reference to the storage service
+                        const storage = getStorage();
+                        const storageRef = ref(storage, `characters/${Date.now()}`);
+                
+                        // Convert image to blob and upload
+                        const response = await fetch(result.assets[0].uri);
+                        const blob = await response.blob();
+                
+                        uploadBytes(storageRef, blob).then((snapshot) => {
+                            getDownloadURL(snapshot.ref).then((downloadURL) => {
+                                setCharacterPhoto(downloadURL); // Save the URL instead of the local path
+                            }).catch((error) => {
+                                console.error("Error getting download URL: ", error);
+                                Alert.alert("Upload Error", "Failed to get download URL.");
+                            });
+                        }).catch((error) => {
+                            console.error("Error uploading file: ", error);
+                            Alert.alert("Upload Error", "Failed to upload image.");
+                        });
                     }
                 };
 
