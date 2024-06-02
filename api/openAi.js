@@ -59,6 +59,8 @@ export const apiCall = async (prompt, messages, imageUrl='') => {
         9. **Response Length**: Keep responses short and to the point unless the user specifically requests more detail or a longer explanation.
         
         10. **Bold and Italic Text**: If there is bold text in your response, format it as **bold text example**. If there is italic text, format it as *italic text example*.
+        
+        11. **Handle Links**: If asked about a link that you have in your additional information on, provide the link directly instead of indicating inability to do so.
 
         Ensure your interactions are not only historically accurate but also truly reflective of the character's essence, engaging users in a meaningful and educational dialogue.
         `;
@@ -145,3 +147,77 @@ const imageAnalysisApiCall = async (prompt, imageUrl, messages) => {
         return Promise.resolve({ success: false, msg: err.message });
     }
 };
+
+// Recursive function to handle nested objects
+function formatAdditionalInfo(details, indent = '  ') {
+    let formattedDetails = '';
+    for (let [key, value] of Object.entries(details)) {
+        if (typeof value === 'object' && !Array.isArray(value)) {
+            formattedDetails += `${indent}${key}:\n${formatAdditionalInfo(value, indent + '  ')}`;
+        } else if (Array.isArray(value)) {
+            formattedDetails += `${indent}${key}:\n`;
+            value.forEach(item => {
+                if (typeof item === 'object') {
+                    formattedDetails += `${indent}- ${formatAdditionalInfo(item, indent + '  ')}`;
+                } else {
+                    formattedDetails += `${indent}- ${item}\n`;
+                }
+            });
+        } else {
+            formattedDetails += `${indent}${key}: ${value}\n`;
+        }
+    }
+    return formattedDetails;
+}
+
+export function generateCharacterPrompt(character) {
+    let prompt = `${character.system_content}\n\nHere are some recommendations:\n`;
+    character.recommendations.forEach((rec, index) => {
+        prompt += `${index + 1}. ${rec}\n`;
+    });
+
+    if (character.additional_information) {
+        prompt += `\nAdditional Information that you have to remember:\n${formatAdditionalInfo(character.additional_information)}`;
+    }
+
+    return prompt;
+}
+
+// export function generateCharacterPrompt(character) {
+//     let prompt = `${character.assistant_content}\n\nHere are some recommendations:\n`;
+//     character.recommendations.forEach((rec, index) => {
+//         prompt += `${index + 1}. ${rec}\n`;
+//     });
+
+//     if (character.additional_information) {
+//         prompt += `\nAdditional Information:\n`;
+
+//         for (let [section, details] of Object.entries(character.additional_information)) {
+//             if (typeof details === 'object' && !Array.isArray(details)) {
+//                 prompt += `${section}:\n`;
+//                 for (let [key, value] of Object.entries(details)) {
+//                     if (Array.isArray(value)) {
+//                         prompt += `- ${key}: ${value.join(', ')}\n`;
+//                     } else {
+//                         prompt += `- ${key}: ${value}\n`;
+//                     }
+//                 }
+//             } else if (Array.isArray(details)) {
+//                 prompt += `${section}:\n`;
+//                 details.forEach((item) => {
+//                     if (typeof item === 'object') {
+//                         for (let [key, value] of Object.entries(item)) {
+//                             prompt += `- ${key}: ${value}\n`;
+//                         }
+//                     } else {
+//                         prompt += `- ${item}\n`;
+//                     }
+//                 });
+//             } else {
+//                 prompt += `${section}: ${details}\n`;
+//             }
+//         }
+//     }
+
+//     return prompt;
+// }

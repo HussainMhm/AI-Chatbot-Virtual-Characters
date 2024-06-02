@@ -98,5 +98,17 @@ export const images = [
     {
         id: '025',
         image: require('../assets/images/characters/025.webp'),
+    },
+    {
+        id: '101',
+        image: require('../assets/images/characters/101.webp'),
+    },
+    {
+        id: '102',
+        image: require('../assets/images/characters/102.webp'),
+    },
+    {
+        id: '103',
+        image: require('../assets/images/characters/103.webp'),
     }
 ];

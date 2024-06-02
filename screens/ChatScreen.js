@@ -11,6 +11,7 @@ import {
     TouchableOpacity,
     Image,
     Switch,
+    Linking
 } from "react-native";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
@@ -22,7 +23,6 @@ import MyChatInputBar from "../components/MyChatInputBar";
 import { FIREBASE_DB, FIREBASE_AUTH } from "../firebaseConfig";
 import { apiCall } from "../api/openAi";
 import { getImage } from "../helpers/index";
-import { set } from "firebase/database";
 
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
@@ -32,8 +32,8 @@ import * as Speech from 'expo-speech';
 const ChatScreen = ({ navigation, route }) => {
     const { character } = route.params;
     const [messages, setMessages] = useState([
-        { role: "system", content: character.system_content },
-        { role: "assistant", content: character.assistant_content },
+        { role: "system", content: character?.system_content },
+        { role: "assistant", content: character?.assistant_content },
     ]);
     const [messageText, setMessageText] = useState("");
     const [loading, setLoading] = useState(false);
@@ -448,11 +448,11 @@ const ChatScreen = ({ navigation, route }) => {
     };
 
     const parseMarkdown = (text) => {
-        const regex = /(\*\*|__)(.*?)\1|(\*|_)(.*?)\3/g;
+        const regex = /(\*\*|__)(.*?)\1|(\*|_)(.*?)\3|(!?\[([^\]]+)\]\(([^\)]+)\))/g;
         let segments = [];
         let lastIndex = 0;
 
-        text.replace(regex, (match, p1, p2, p3, p4, offset) => {
+        text.replace(regex, (match, p1, p2, p3, p4, p5, altText, linkUrl, offset) => {
             if (lastIndex < offset) {
                 segments.push({
                     text: text.substring(lastIndex, offset),
@@ -470,6 +470,13 @@ const ChatScreen = ({ navigation, route }) => {
                     text: p4,
                     style: { fontStyle: "italic" },
                 });
+            } else if (linkUrl) {
+                segments.push({
+                    text: altText,
+                    style: { color: 'blue', textDecorationLine: 'underline' },
+                    type: 'link',
+                    url: linkUrl
+                });
             }
 
             lastIndex = offset + match.length;
@@ -483,6 +490,7 @@ const ChatScreen = ({ navigation, route }) => {
         }
         return segments;
     };
+
 
     const renderMessage = (message, index) => {
         if (message.role === "user") {
@@ -500,7 +508,7 @@ const ChatScreen = ({ navigation, route }) => {
                         <Text className="text-base">{message.content}</Text>
                     </View>
                 )
-            }else {
+            } else {
                 return (
                     <View
                         key={index}
@@ -536,13 +544,22 @@ const ChatScreen = ({ navigation, route }) => {
                         className="bg-[#1b1b1b] py-4 px-6 rounded-3xl mb-3 mr-10 self-start"
                     >
                         <Text className="text-white text-base">
-                            {
-                                segments.map((segment, i) => (
+                            {segments.map((segment, i) => {
+                                if (segment.type === 'link') {
+                                    return (
+                                        <TouchableOpacity key={i} onPress={() => Linking.openURL(segment.url)}>
+                                            <Text style={segment.style}>
+                                                {segment.text}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    );
+                                }
+                                return (
                                     <Text key={i} style={segment.style}>
                                         {segment.text}
                                     </Text>
-                                ))
-                            }
+                                );
+                            })}
                         </Text>
                     </View>
                 );
