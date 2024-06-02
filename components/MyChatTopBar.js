@@ -9,8 +9,9 @@ import {
     Alert,
     TouchableWithoutFeedback,
     Switch,
+    Platform,
 } from "react-native";
-import { FontAwesome5, SimpleLineIcons } from "@expo/vector-icons";
+import { FontAwesome, FontAwesome5, SimpleLineIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
@@ -25,7 +26,7 @@ const MyChatTopBar = ({
     voiceEnabled,
     toggleVoice,
     isExpoVoice,
-    setExpoVoice
+    setExpoVoice,
 }) => {
     const navigation = useNavigation();
     const [modalVisible, setModalVisible] = useState(false);
@@ -124,38 +125,57 @@ const MyChatTopBar = ({
                         style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
                     >
                         <View className="bg-[#0F0F0F] rounded-t-3xl p-4 py-10 space-y-4">
+                            {/* Voice Speach */}
                             <TouchableOpacity
                                 className="flex-row items-center p-5 rounded-3xl bg-[#1B1B1B]"
                                 onPress={() => toggleVoice()}
                             >
-                                <Switch
-                                    className="ml-2"
-                                    trackColor={{ false: "#B0B4BA", true: "#0CBF08" }}
-                                    thumbColor={"#FFFFFF"}
-                                    ios_backgroundColor="#3e3e3e"
-                                    onValueChange={toggleVoice}
-                                    value={voiceEnabled}
+                                <FontAwesome
+                                    name="microphone"
+                                    size={24}
+                                    color="white"
                                     style={styles.icon}
                                 />
-                                <Text className="text-white ml-2 text-lg">Voice Speach</Text>
+                                <Text className="text-white ml-4 text-lg flex-1">Voice Speach</Text>
+                                <View className={`${Platform.OS === "ios" ? "mr-6" : ""}`}>
+                                    <Switch
+                                        trackColor={{ false: "#B0B4BA", true: "#0CBF08" }}
+                                        thumbColor={"#FFFFFF"}
+                                        ios_backgroundColor="#3e3e3e"
+                                        onValueChange={toggleVoice}
+                                        value={voiceEnabled}
+                                        style={styles.icon}
+                                    />
+                                </View>
                             </TouchableOpacity>
+                            {/* Faster Response */}
                             {voiceEnabled && (
                                 <TouchableOpacity
                                     className="flex-row items-center p-5 rounded-3xl bg-[#1B1B1B]"
                                     onPress={() => setExpoVoice(!isExpoVoice)}
                                 >
-                                    <Switch
-                                        className="ml-2"
-                                        trackColor={{ false: "#B0B4BA", true: "#0CBF08" }}
-                                        thumbColor={"#FFFFFF"}
-                                        ios_backgroundColor="#3e3e3e"
-                                        onValueChange={setExpoVoice}
-                                        value={isExpoVoice}
+                                    <FontAwesome5
+                                        name="forward"
+                                        size={24}
+                                        color="white"
                                         style={styles.icon}
                                     />
-                                    <Text className="text-white ml-2 text-lg">Faster Response</Text>
+                                    <Text className="text-white ml-4 text-lg flex-1">
+                                        Faster Response
+                                    </Text>
+                                    <View className={`${Platform.OS === "ios" ? "mr-6" : ""}`}>
+                                        <Switch
+                                            trackColor={{ false: "#B0B4BA", true: "#0CBF08" }}
+                                            thumbColor={"#FFFFFF"}
+                                            ios_backgroundColor="#3e3e3e"
+                                            onValueChange={setExpoVoice}
+                                            value={isExpoVoice}
+                                            style={styles.icon}
+                                        />
+                                    </View>
                                 </TouchableOpacity>
                             )}
+                            {/* Archive & Re-Start Chat */}
                             <TouchableOpacity
                                 className="flex-row items-center p-5 rounded-3xl bg-[#1B1B1B]"
                                 onPress={() => handleOptionPress("Archive & Re-Start Chat")}
@@ -170,6 +190,7 @@ const MyChatTopBar = ({
                                     Archive & Re-Start Chat
                                 </Text>
                             </TouchableOpacity>
+                            {/* Delete & Re-Start Chat */}
                             <TouchableOpacity
                                 className="flex-row items-center p-5 rounded-3xl bg-[#1B1B1B]"
                                 onPress={() => handleOptionPress("Delete & Re-Start Chat")}
@@ -184,6 +205,7 @@ const MyChatTopBar = ({
                                     Delete & Re-Start Chat
                                 </Text>
                             </TouchableOpacity>
+                            {/* Add to Favorites */}
                             <TouchableOpacity
                                 className="flex-row items-center p-5 rounded-3xl bg-[#1B1B1B]"
                                 onPress={() => handleOptionPress("Add to Favorites")}

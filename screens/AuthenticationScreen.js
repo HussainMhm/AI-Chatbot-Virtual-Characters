@@ -32,6 +32,7 @@ const AuthenticationScreen = ({ navigation, route }) => {
                 // Signed in
                 console.log("User registered:", userCredential.user);
                 // You can navigate to other screens here or set user info
+                navigation.navigate("Profile");
             })
             .catch((error) => {
                 console.error("Error signing up:", error.message);
@@ -43,7 +44,7 @@ const AuthenticationScreen = ({ navigation, route }) => {
         signInWithEmailAndPassword(FIREBASE_AUTH, email, password)
             .then((userCredential) => {
                 // Signed in
-                navigation.navigate("Profile")
+                navigation.navigate("Profile");
             })
             .catch((error) => {
                 console.error("Error signing in:", error.message);

@@ -24,6 +24,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { setDoc, addDoc, collection } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { FIREBASE_DB, FIREBASE_AUTH } from "../firebaseConfig";
+import { getStorage, ref, getDownloadURL } from "firebase/storage"; // Import Firebase storage functions
 
 const CharacterBuilder = ({ navigation }) => {
     // Step state and handler
@@ -97,6 +98,7 @@ const CharacterBuilder = ({ navigation }) => {
     const [characterCategory, setCharacterCategory] = useState(0);
 
     const [user, setUser] = useState(null);
+    const [defaultImages, setDefaultImages] = useState([]); // State to store default images
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (currentUser) => {
@@ -106,12 +108,30 @@ const CharacterBuilder = ({ navigation }) => {
         return () => unsubscribe();
     }, []);
 
-    const defaultImages = [
-        "https://randomuser.me/api/portraits/men/1.jpg",
-        "https://randomuser.me/api/portraits/women/1.jpg",
-        "https://randomuser.me/api/portraits/men/2.jpg",
-        "https://randomuser.me/api/portraits/women/2.jpg",
-    ];
+    useEffect(() => {
+        const fetchDefaultImages = async () => {
+            const storage = getStorage();
+            const imagePaths = [
+                "CharacterImagePicker/man1.jpg",
+                "CharacterImagePicker/man2.jpg",
+                "CharacterImagePicker/man3.jpg",
+                "CharacterImagePicker/woman1.jpg",
+                "CharacterImagePicker/woman2.jpg",
+                "CharacterImagePicker/woman3.jpg",
+            ];
+
+            const urls = await Promise.all(
+                imagePaths.map(async (path) => {
+                    const imageRef = ref(storage, path);
+                    return await getDownloadURL(imageRef);
+                })
+            );
+
+            setDefaultImages(urls);
+        };
+
+        fetchDefaultImages();
+    }, []);
 
     // List of interests and emojis
     const interestsList = [

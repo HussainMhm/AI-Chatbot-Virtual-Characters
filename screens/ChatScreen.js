@@ -11,7 +11,7 @@ import {
     TouchableOpacity,
     Image,
     Switch,
-    Linking
+    Linking,
 } from "react-native";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
@@ -24,10 +24,9 @@ import { FIREBASE_DB, FIREBASE_AUTH } from "../firebaseConfig";
 import { apiCall } from "../api/openAi";
 import { getImage } from "../helpers/index";
 
-import { Audio } from 'expo-av';
-import * as FileSystem from 'expo-file-system';
-import * as Speech from 'expo-speech';
-
+import { Audio } from "expo-av";
+import * as FileSystem from "expo-file-system";
+import * as Speech from "expo-speech";
 
 const ChatScreen = ({ navigation, route }) => {
     const { character } = route.params;
@@ -46,8 +45,7 @@ const ChatScreen = ({ navigation, route }) => {
     // Add a state variable to track voice rendering
     const [voiceEnabled, setVoiceEnabled] = useState(false);
     const [isExpoVoice, setExpoVoice] = useState(true);
-    const [visionImageUrl, setVisionImageUrl] = useState('');
-
+    const [visionImageUrl, setVisionImageUrl] = useState("");
 
     const ScrollViewRef = useRef();
 
@@ -81,14 +79,14 @@ const ChatScreen = ({ navigation, route }) => {
 
     const loadVoiceEnabled = async () => {
         try {
-            const voiceEnabledValue = await AsyncStorage.getItem('voiceEnabled');
+            const voiceEnabledValue = await AsyncStorage.getItem("voiceEnabled");
             if (voiceEnabledValue !== null) {
                 setVoiceEnabled(JSON.parse(voiceEnabledValue));
             } else {
                 setVoiceEnabled(false);
             }
         } catch (error) {
-            console.error('Error loading voiceEnabled from AsyncStorage:', error);
+            console.error("Error loading voiceEnabled from AsyncStorage:", error);
         }
     };
 
@@ -97,7 +95,7 @@ const ChatScreen = ({ navigation, route }) => {
             Speech.stop();
             setAudioDuration(100);
         }
-    }, [voiceEnabled])
+    }, [voiceEnabled]);
 
     const loadChatHistory = async () => {
         try {
@@ -285,7 +283,7 @@ const ChatScreen = ({ navigation, route }) => {
     const blobToBase64 = (blob) => {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result.split(',')[1]);
+            reader.onloadend = () => resolve(reader.result.split(",")[1]);
             reader.onerror = reject;
             reader.readAsDataURL(blob);
         });
@@ -305,35 +303,37 @@ const ChatScreen = ({ navigation, route }) => {
             try {
                 const url = "https://api.elevenlabs.io/v1/text-to-speech/XRlny9TzSxQhHzOusWWe";
                 const headers = {
-                    "Accept": "audio/mpeg",
+                    Accept: "audio/mpeg",
                     "Content-Type": "application/json",
-                    "xi-api-key": "054fbe3f91ce98fe5cb817adb8efed1d"
+                    "xi-api-key": "054fbe3f91ce98fe5cb817adb8efed1d",
                 };
                 const data = {
-                    "text": text,
-                    "model_id": "eleven_monolingual_v1",
-                    "voice_settings": {
-                        "stability": 0.5,
-                        "similarity_boost": 0.5
-                    }
+                    text: text,
+                    model_id: "eleven_monolingual_v1",
+                    voice_settings: {
+                        stability: 0.5,
+                        similarity_boost: 0.5,
+                    },
                 };
 
                 const response = await fetch(url, {
-                    method: 'POST',
+                    method: "POST",
                     headers: headers,
-                    body: JSON.stringify(data)
+                    body: JSON.stringify(data),
                 });
 
                 if (!response.ok) {
-                    throw new Error('Failed to fetch audio');
+                    throw new Error("Failed to fetch audio");
                 }
 
                 const audioContent = await response.blob();
                 const base64Audio = await blobToBase64(audioContent);
-                const uri = FileSystem.cacheDirectory + 'audio.mp3';
+                const uri = FileSystem.cacheDirectory + "audio.mp3";
 
                 // Save the base64 audio content to a file
-                await FileSystem.writeAsStringAsync(uri, base64Audio, { encoding: FileSystem.EncodingType.Base64 });
+                await FileSystem.writeAsStringAsync(uri, base64Audio, {
+                    encoding: FileSystem.EncodingType.Base64,
+                });
 
                 // Load and play the audio
                 const { sound, status } = await Audio.Sound.createAsync(
@@ -348,9 +348,9 @@ const ChatScreen = ({ navigation, route }) => {
 
                 // Calculate audio duration
                 const audioDuration = status.durationMillis;
-                setAudioDuration(audioDuration)
+                setAudioDuration(audioDuration);
             } catch (error) {
-                console.log('Error in speakText:', error);
+                console.log("Error in speakText:", error);
                 // Fallback to expo-speach if API fails
                 speakText(text);
                 // Set isLoading to false if there's an error
@@ -365,9 +365,9 @@ const ChatScreen = ({ navigation, route }) => {
         const newVoiceEnabled = !voiceEnabled;
         setVoiceEnabled(newVoiceEnabled);
         try {
-            await AsyncStorage.setItem('voiceEnabled', JSON.stringify(newVoiceEnabled));
+            await AsyncStorage.setItem("voiceEnabled", JSON.stringify(newVoiceEnabled));
         } catch (error) {
-            console.error('Error saving voiceEnabled to AsyncStorage:', error);
+            console.error("Error saving voiceEnabled to AsyncStorage:", error);
         }
     };
 
@@ -378,7 +378,7 @@ const ChatScreen = ({ navigation, route }) => {
             newMessages.push({
                 role: "user",
                 content: messageText.trim(),
-                imageUrl: visionImageUrl !== '' ? visionImageUrl : null
+                imageUrl: visionImageUrl !== "" ? visionImageUrl : null,
             });
             setMessages([...newMessages]);
             updateScrollView();
@@ -400,7 +400,7 @@ const ChatScreen = ({ navigation, route }) => {
                 }
             });
             setMessageText("");
-            setVisionImageUrl('');
+            setVisionImageUrl("");
             setRecommendationsVisible(false);
         }
     };
@@ -448,8 +448,8 @@ const ChatScreen = ({ navigation, route }) => {
             setLatestMessage(displayedContent);
 
             // Adjust timing based on word length
-            const wordDuration = audioDuration / content.length * words[i].length;
-            await new Promise(resolve => setTimeout(resolve, wordDuration));
+            const wordDuration = (audioDuration / content.length) * words[i].length;
+            await new Promise((resolve) => setTimeout(resolve, wordDuration));
         }
     };
 
@@ -468,7 +468,7 @@ const ChatScreen = ({ navigation, route }) => {
 
             if (p2) {
                 segments.push({
-                    text: p2,
+                    text: "\n\n" + p2,
                     style: { fontWeight: "bold" },
                 });
             } else if (p4) {
@@ -479,9 +479,9 @@ const ChatScreen = ({ navigation, route }) => {
             } else if (linkUrl) {
                 segments.push({
                     text: altText,
-                    style: { color: 'blue', textDecorationLine: 'underline' },
-                    type: 'link',
-                    url: linkUrl
+                    style: { color: "blue", textDecorationLine: "underline" },
+                    type: "link",
+                    url: linkUrl,
                 });
             }
 
@@ -497,23 +497,24 @@ const ChatScreen = ({ navigation, route }) => {
         return segments;
     };
 
-
     const renderMessage = (message, index) => {
         if (message.role === "user") {
             if (message?.imageUrl) {
                 return (
                     <View
                         key={index}
-                        className="bg-orange-300 py-3 px-4 rounded-2xl mb-3 ml-10 self-end"
+                        className="bg-orange-300 py-6 px-4 rounded-2xl mb-3 ml-10 self-end w-[250]"
                     >
-                        <Image
-                            source={{ uri: message?.imageUrl }}
-                            className="w-full h-40 rounded-2xl"
-                            style={{ width: 200, height: 200, borderRadius: 20 }}
-                        />
-                        <Text className="text-base">{message.content}</Text>
+                        <View className="items-center">
+                            <Image
+                                source={{ uri: message?.imageUrl }}
+                                className="w-full h-40 rounded-2xl"
+                                style={{ width: 200, height: 200, borderRadius: 20 }}
+                            />
+                        </View>
+                        <Text className="text-base ml-2 mt-2">{message.content}</Text>
                     </View>
-                )
+                );
             } else {
                 return (
                     <View
@@ -551,12 +552,13 @@ const ChatScreen = ({ navigation, route }) => {
                     >
                         <Text className="text-white text-base">
                             {segments.map((segment, i) => {
-                                if (segment.type === 'link') {
+                                if (segment.type === "link") {
                                     return (
-                                        <TouchableOpacity key={i} onPress={() => Linking.openURL(segment.url)}>
-                                            <Text style={segment.style}>
-                                                {segment.text}
-                                            </Text>
+                                        <TouchableOpacity
+                                            key={i}
+                                            onPress={() => Linking.openURL(segment.url)}
+                                        >
+                                            <Text style={segment.style}>{segment.text}</Text>
                                         </TouchableOpacity>
                                     );
                                 }
@@ -592,9 +594,10 @@ const ChatScreen = ({ navigation, route }) => {
                         <TouchableOpacity
                             key={index}
                             onPress={() => sendRecommendation(recommendation)}
-                            className="p-4 w-36 mr-3 rounded-xl"
+                            className="mr-3 p-4 rounded-xl"
                             style={{
                                 backgroundColor: "rgba(0, 0, 0, 0.5)",
+                                width: 150,
                             }}
                         >
                             <Text className="text-white">{recommendation}</Text>
@@ -611,10 +614,10 @@ const ChatScreen = ({ navigation, route }) => {
                 character?.image_path?.startsWith("assets/")
                     ? getImage(character?.id)
                     : {
-                        uri:
-                            character?.image_path ??
-                            "https://randomuser.me/api/portraits/med/men/1.jpg",
-                    }
+                          uri:
+                              character?.image_path ??
+                              "https://randomuser.me/api/portraits/med/men/1.jpg",
+                      }
             }
             className="flex-1"
             resizeMode="cover"
