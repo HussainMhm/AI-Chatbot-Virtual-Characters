@@ -47,6 +47,9 @@ const ChatScreen = ({ navigation, route }) => {
     const [isExpoVoice, setExpoVoice] = useState(true);
     const [visionImageUrl, setVisionImageUrl] = useState("");
 
+    const voiceIds = {'male': 'BkdVzTJlDSOP1TQToIvr', 'female': '9DMefmt9qE4f4VhXKMJM'};
+    const [voiceId] = useState(character?.gender  === 'male' ? voiceIds?.male : voiceIds?.female);
+
     const ScrollViewRef = useRef();
 
     useEffect(() => {
@@ -301,11 +304,11 @@ const ChatScreen = ({ navigation, route }) => {
             speakText(text);
         } else if (text) {
             try {
-                const url = "https://api.elevenlabs.io/v1/text-to-speech/XRlny9TzSxQhHzOusWWe";
+                const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
                 const headers = {
                     Accept: "audio/mpeg",
                     "Content-Type": "application/json",
-                    "xi-api-key": "054fbe3f91ce98fe5cb817adb8efed1d",
+                    "xi-api-key": "4eff54e546cb590b6eabca7c1e1a4d83",
                 };
                 const data = {
                     text: text,

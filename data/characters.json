@@ -11,7 +11,8 @@
                 "What's the best workout for beginners?",
                 "How can I build muscle?",
                 "What should I eat to stay healthy?"
-            ]
+            ],
+            "gender": "male"
         },
         {
             "id": "002",
@@ -24,7 +25,8 @@
                 "Can you suggest a simple dinner recipe?",
                 "What's the best way to cook pasta?",
                 "Do you have any baking tips?"
-            ]
+            ],
+            "gender": "female"
         },
         {
             "id": "003",
@@ -37,7 +39,8 @@
                 "How can I manage stress?",
                 "What's the best way to improve mental health?",
                 "Can you give me advice on dealing with anxiety?"
-            ]
+            ],
+            "gender": "male"
         },
         {
             "id": "004",
@@ -50,7 +53,8 @@
                 "What are some must-see places in Europe?",
                 "What's the best way to travel on a budget?",
                 "Do you have any travel safety tips?"
-            ]
+            ],
+            "gender": "female"
         },
         {
             "id": "005",
@@ -63,7 +67,8 @@
                 "How can I stay motivated to achieve my goals?",
                 "What's the best way to improve time management?",
                 "Can you give me advice on work-life balance?"
-            ]
+            ],
+            "gender": "female"
         },
         {
             "id": "006",
@@ -76,7 +81,8 @@
                 "What's it like to work on a big movie set?",
                 "Can you tell me about your favorite movie role?",
                 "Why are you passionate about environmental causes?"
-            ]
+            ],
+            "gender": "male"
         },
         {
             "id": "007",
@@ -89,7 +95,8 @@
                 "What's it like to direct a movie?",
                 "Can you share a memorable experience from your humanitarian work?",
                 "What's your favorite role you've played?"
-            ]
+            ],
+            "gender": "female"
         },
         {
             "id": "008",
@@ -102,7 +109,8 @@
                 "What's your most iconic Hollywood moment?",
                 "What's it like being a Hollywood star?",
                 "What were your favorite movies to act in?"
-            ]
+            ],
+            "gender": "female"
         },
         {
             "id": "009",
@@ -115,7 +123,8 @@
                 "What's your most memorable football match?",
                 "Can you give me tips on improving my football skills?",
                 "What's your training routine?"
-            ]
+            ],
+            "gender": "male"
         },
         {
             "id": "010",
@@ -128,7 +137,8 @@
                 "What's it like to play in the NBA Finals?",
                 "Can you share your most memorable dunk?",
                 "What's your best advice for aspiring basketball players?"
-            ]
+            ],
+            "gender": "male"
         },
         {
             "id": "011",
@@ -141,7 +151,8 @@
                 "What's your favorite goal you've scored?",
                 "What's your favorite football team?",
                 "Can you share a memorable moment from your career?"
-            ]
+            ],
+            "gender": "male"
         },
         {
             "id": "012",
@@ -154,7 +165,8 @@
                 "What's your favorite trick on the football field?",
                 "How do you stay motivated in your career?",
                 "What's your favorite goal celebration?"
-            ]
+            ],
+            "gender": "male"
         },
         {
             "id": "013",
@@ -167,7 +179,8 @@
                 "What's your favorite tennis match?",
                 "What's your advice for improving tennis skills?",
                 "How do you maintain focus during a match?"
-            ]
+            ],
+            "gender": "male"
         },
         {
             "id": "014",
@@ -180,7 +193,8 @@
                 "What's your favorite scoring move in basketball?",
                 "What's your advice for playing as a team?",
                 "What's your favorite memory from your career?"
-            ]
+            ],
+            "gender": "male"
         },
         {
             "id": "015",
@@ -193,7 +207,8 @@
                 "What's your favorite golf course?",
                 "What's your best advice for improving a golf swing?",
                 "What's your most memorable golf championship?"
-            ]
+            ],
+            "gender": "male"
         },
         {
             "id": "016",
@@ -206,7 +221,8 @@
                 "What's your most exciting project at Tesla?",
                 "What's it like to lead SpaceX?",
                 "What's your vision for the future of technology?"
-            ]
+            ],
+            "gender": "male"
         },
         {
             "id": "017",
@@ -219,7 +235,8 @@
                 "What's the key to a successful business?",
                 "What's your advice for aspiring entrepreneurs?",
                 "What's your favorite innovation at Amazon?"
-            ]
+            ],
+            "gender": "male"
         },
         {
             "id": "018",
@@ -232,7 +249,8 @@
                 "What's your advice for starting a tech company?",
                 "What's it like to be a philanthropist?",
                 "What do you think about the future of technology?"
-            ]
+            ],
+            "gender": "male"
         },
         {
             "id": "019",
@@ -245,7 +263,8 @@
                 "What's your vision for the future of social media?",
                 "What's it like to lead Facebook?",
                 "What's your advice for starting a tech business?"
-            ]
+            ],
+            "gender": "male"
         },
         {
             "id": "020",
@@ -258,7 +277,8 @@
                 "What was your vision for Apple?",
                 "What inspired the design of the iPhone?",
                 "What's your advice for fostering innovation?"
-            ]
+            ],
+            "gender": "male"
         },
         {
             "id": "021",
@@ -271,7 +291,8 @@
                 "What's it like to be the President of the United States?",
                 "What's your most important policy focus?",
                 "What's your advice for aspiring politicians?"
-            ]
+            ],
+            "gender": "male"
         },
         {
             "id": "022",
@@ -284,7 +305,8 @@
                 "What's your advice for success in business?",
                 "What's your favorite public speaking tip?",
                 "What's your view on current political issues?"
-            ]
+            ],
+            "gender": "male"
         },
         {
             "id": "023",
@@ -297,7 +319,8 @@
                 "What's the theory of relativity about?",
                 "What's your favorite scientific discovery?",
                 "What's your advice for aspiring scientists?"
-            ]
+            ],
+            "gender": "male"
         },
         {
             "id": "024",
@@ -310,7 +333,8 @@
                 "What's your most innovative invention?",
                 "What's your advice for aspiring engineers?",
                 "What's your vision for the future of energy?"
-            ]
+            ],
+            "gender": "male"
         },
         {
             "id": "025",
@@ -323,7 +347,8 @@
                 "What's the significance of the laws of motion?",
                 "What's your advice for aspiring mathematicians?",
                 "What's your most memorable scientific achievement?"
-            ]
+            ],
+            "gender": "male"
         }
     ]
 }

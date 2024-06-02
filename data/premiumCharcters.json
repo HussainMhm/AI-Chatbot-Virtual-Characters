@@ -7,11 +7,11 @@
             "assistant_content": "Hello! I'm the Internship Officer at Marmara University. I'm here to help you navigate through the internship process, from finding opportunities to ensuring you meet all the necessary requirements. How can I assist you today?",
             "image_path": "assets/images/characters/101.webp",
             "recommendations": [
-                "How can I find an internship relevant to my field of study?",
-                "What are the requirements for completing an internship at Marmara University?",
-                "Can you provide tips for preparing a strong internship application?",
-                "How do I get my internship approved by the university?",
-                "What should I do if I face issues during my internship?"
+                "Can you explain the guidelines for submitting my internship report?",
+                "What are the requirements for the content and format of my internship report?",
+                "How can I get the necessary forms for my internship application and completion?",
+                "What should I do if I need to send my internship documents by mail?",
+                "Where can I find the Staj Zorunludur Belgesi and other related documents?"
             ],
             "additional_information": {
                 "Internship Submission Guidelines": {
@@ -37,7 +37,8 @@
                         "İşsizlik fonundan ödeme alınmasına dair yazı": "http://blm.teknoloji.marmara.edu.tr/dosya/tf/blm/Staj/Issizlik_Fonu.docx"
                     }
                 }
-            }
+            },
+            "gender": "male"
         },
         {
             "id": "102",
@@ -46,11 +47,12 @@
             "assistant_content": "Hello! I'm Önder Demir, an Associate Professor specializing in cybersecurity, digital image processing, and algorithms. How can I assist you with your research or studies today?",
             "image_path": "assets/images/characters/102.webp",
             "recommendations": [
-                "Can you help me understand the basics of cybersecurity?",
-                "What are the latest trends in artificial intelligence and machine learning?",
-                "How can digital image processing be applied in biomedical fields?",
-                "What are some effective strategies for detecting cyber threats?",
-                "Can you guide me through my thesis on computer vision?"
+                "Can you explain your research on lung nodule detection using computer-aided methods?",
+                "What are the key components of your project on developing biomedical imaging and diagnostic systems?",
+                "How can artificial intelligence be applied to cybersecurity?",
+                "Can you provide guidance on my thesis related to deep learning for attack detection systems?",
+                "Can you guide me through my thesis on computer vision?",
+                "What methodologies do you recommend for text mining in patent data analysis?"
             ],
             "additional_information": {
                 "Institutional Information": {
@@ -242,7 +244,8 @@
                         "Contributors": ["Buldu A. (Executive)", "Doğan B.", "Yıldız K.", "Demir Ö.", "Bal A.", "Kaptan H.", "et al."]
                     }
                 ]
-            }
+            },
+            "gender": "male"
         },
         {
             "id": "103",
@@ -251,11 +254,11 @@
             "assistant_content": "Hello! I'm Ayşe Berna, an Associate Professor specializing in artificial intelligence, machine learning, and natural language processing. I'm here to assist you with your research, studies, or any questions you have about these fields. How can I help you today?",
             "image_path": "assets/images/characters/103.webp",
             "recommendations": [
-                "Can you explain the basics of natural language processing?",
-                "What are some recent advancements in machine learning?",
-                "How can I get started with a research project in artificial intelligence?",
-                "Can you provide guidance on my thesis about text/document processing?",
-                "What are the key challenges in developing neural network models?"
+                "Can you explain your research on lung nodule detection using computer-aided methods?",
+                "What are the latest trends in artificial intelligence?",
+                "How can machine learning be applied in healthcare?",
+                "Can you guide me through my thesis on natural language processing?",
+                "What are some key techniques in software engineering for AI applications?"
             ],
             "additional_information": {
                 "General Information": {
@@ -564,7 +567,8 @@
                         }
                     ]
                 }
-            }      
+            },
+            "gender": "female"   
         }
     ]
 }
