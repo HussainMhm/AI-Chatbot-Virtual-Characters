@@ -32,11 +32,11 @@ const ProfileScreen = () => {
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (currentUser) => {
-            if (currentUser){
+            if (currentUser) {
                 loadChatsHistory();
                 loadFavorites();
                 loadNewCharacters();
-            }else {
+            } else {
                 loadFavoritesFromLocal();
                 loadChatsHistoryFromLocal();
             }
@@ -52,11 +52,10 @@ const ProfileScreen = () => {
                 loadChatsHistory();
                 loadFavorites();
                 loadNewCharacters();
-            }else {
+            } else {
                 loadFavoritesFromLocal();
                 loadChatsHistoryFromLocal();
             }
-            
         }, [user])
     );
 
@@ -66,17 +65,19 @@ const ProfileScreen = () => {
         { label: "Favorites", value: "favorites" },
     ];
 
-    useEffect(()=>{
+    useEffect(() => {
         let favCharacters = [];
-        favCharacters = localCharacters.filter((character) => favoriteIds.includes(character?.id))
-        let favNewCharacters = newCharacters.filter((character) => favoriteIds.includes(character?.id))
+        favCharacters = localCharacters.filter((character) => favoriteIds.includes(character?.id));
+        let favNewCharacters = newCharacters.filter((character) =>
+            favoriteIds.includes(character?.id)
+        );
         favCharacters = favCharacters.concat(favNewCharacters);
-        setFavoriteCharacters(favCharacters)
-    }, [favoriteIds, setFavoritesIds, newCharacters])
+        setFavoriteCharacters(favCharacters);
+    }, [favoriteIds, setFavoritesIds, newCharacters]);
 
     const loadFavorites = async () => {
         try {
-            if (user?.uid){
+            if (user?.uid) {
                 const docRef = doc(FIREBASE_DB, "user_favorites", user.uid);
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
@@ -90,8 +91,8 @@ const ProfileScreen = () => {
     };
 
     const loadFavoritesFromLocal = async () => {
-        try {   
-            const value = await AsyncStorage.getItem('user_favorites');
+        try {
+            const value = await AsyncStorage.getItem("user_favorites");
             let favoriteIds = value ? JSON.parse(value) : [];
             setFavoritesIds(favoriteIds);
         } catch (error) {
@@ -101,7 +102,7 @@ const ProfileScreen = () => {
 
     const loadChatsHistory = async () => {
         try {
-            if (user?.uid){
+            if (user?.uid) {
                 const docRef = doc(FIREBASE_DB, "user_chat_history", user.uid);
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
@@ -115,26 +116,26 @@ const ProfileScreen = () => {
         } catch (e) {
             console.log(`Failed to get chat history from profile screen:`, e);
         }
-    }
+    };
 
     const loadChatsHistoryFromLocal = async () => {
         try {
-            const value = await AsyncStorage.getItem('user_chat_history');
+            const value = await AsyncStorage.getItem("user_chat_history");
             const data = JSON.parse(value);
             const history = Object.values(data);
             setChatsHistory(Array.isArray(history) ? history : []);
         } catch (e) {
             console.log(`Failed to get chat history from local storage profile screen:`, e);
         }
-    }
+    };
 
     const loadNewCharacters = async () => {
         try {
             const q = query(collection(FIREBASE_DB, "characters"), where("userId", "==", user.uid));
             const querySnapshot = await getDocs(q);
-            const characters = querySnapshot.docs.map(doc => ({
+            const characters = querySnapshot.docs.map((doc) => ({
                 ...doc.data(),
-                id: doc.id // Ensure each character has an id property
+                id: doc.id, // Ensure each character has an id property
             }));
             setNewCharacters(characters);
         } catch (e) {
@@ -143,11 +144,13 @@ const ProfileScreen = () => {
     };
 
     const handleToggleFavorite = (characterId) => {
-        let updatedFavorites = favoriteCharacters.filter((character) => character?.id !== characterId);
+        let updatedFavorites = favoriteCharacters.filter(
+            (character) => character?.id !== characterId
+        );
         setFavoriteCharacters(updatedFavorites);
         if (user) {
             loadFavorites();
-        }else{
+        } else {
             loadFavoritesFromLocal();
         }
     };
@@ -236,12 +239,14 @@ const ProfileScreen = () => {
             {/* Profile information */}
             <View className="p-4 flex-row items-center">
                 <Image
-                    source={{ uri: "https://randomuser.me/api/portraits/med/men/1.jpg" }}
-                    className="w-24 h-24 rounded-full mr-6"
+                    source={require("../assets/images/profile-picture.png")}
+                    className="w-24 h-24 mr-6 mt-4"
                 />
                 <View>
-                    <Text className="text-white text-xl font-bold">{(user && user?.name) ? user?.name : 'Guest User'}</Text>
-                    <Text className="text-gray-500">{(user && user?.email) ? user?.email : '@guest'}</Text>
+                    <Text className="text-white text-xl font-bold">Welcome!</Text>
+                    <Text className="text-gray-500">
+                        {user && user?.email ? user?.email : "@guest"}
+                    </Text>
                 </View>
             </View>
 
