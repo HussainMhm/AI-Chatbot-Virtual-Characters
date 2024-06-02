@@ -19,7 +19,7 @@ const MyChatInputBar = ({
     setMessageText,
     sendMessage,
     visionImageUrl,
-    setVisionImageUrl
+    setVisionImageUrl,
 }) => {
     const [recording, setRecording] = useState(false);
 
@@ -111,56 +111,72 @@ const MyChatInputBar = ({
     };
 
     const clearImage = () => {
-        setVisionImageUrl('');
+        setVisionImageUrl("");
     };
 
     return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            className="flex-row items-center px-5 mb-4"
-        >
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}>
             {visionImageUrl && (
-                <View style={styles.imagePreviewContainer}>
-                    <Image source={{ uri: visionImageUrl }} style={styles.imagePreview} />
-                    <TouchableOpacity style={styles.clearButton} onPress={clearImage}>
+                <View className="w-[60] ml-5">
+                    <Image
+                        source={{ uri: visionImageUrl }}
+                        style={{
+                            width: 60,
+                            height: 60,
+                            borderRadius: 10,
+                        }}
+                    />
+                    <TouchableOpacity
+                        style={{
+                            position: "absolute",
+                            top: -10,
+                            right: -10,
+                        }}
+                        onPress={clearImage}
+                    >
                         <Ionicons name="close-circle" size={24} color="white" />
                     </TouchableOpacity>
                 </View>
             )}
             <View
-                style={{
-                    backgroundColor: "rgba(0, 0, 0, 0.7)",
-                    color: "white",
-                    flexDirection: "row",
-                    alignItems: "center",
-                }}
-                className="flex-1 rounded-2xl py-4 px-4 my-2 mr-2"
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                className="flex-row items-center px-5 mb-4"
             >
-                <TextInput
-                    style={{ color: "white", flex: 1 }}
-                    placeholder="Type a message..."
-                    placeholderTextColor="gray"
-                    onChangeText={(text) => setMessageText(text)}
-                    value={messageText}
-                    onSubmitEditing={sendMessage}
-                />
-                {recording ? (
-                    <TouchableOpacity style={{ marginLeft: 8 }} onPress={stopRecording}>
-                        <Ionicons name="mic-off" size={30} color="white" />
+                <View
+                    style={{
+                        backgroundColor: "rgba(0, 0, 0, 0.7)",
+                        color: "white",
+                        flexDirection: "row",
+                        alignItems: "center",
+                    }}
+                    className="flex-1 rounded-2xl py-4 px-4 my-2 mr-2"
+                >
+                    <TextInput
+                        style={{ color: "white", flex: 1 }}
+                        placeholder="Type a message..."
+                        placeholderTextColor="gray"
+                        onChangeText={(text) => setMessageText(text)}
+                        value={messageText}
+                        onSubmitEditing={sendMessage}
+                    />
+                    {recording ? (
+                        <TouchableOpacity style={{ marginLeft: 8 }} onPress={stopRecording}>
+                            <Ionicons name="mic-off" size={30} color="white" />
+                        </TouchableOpacity>
+                    ) : (
+                        <TouchableOpacity style={{ marginLeft: 8 }} onPress={startRecording}>
+                            <Ionicons name="mic" size={30} color="white" />
+                        </TouchableOpacity>
+                    )}
+                    <TouchableOpacity style={{ marginLeft: 2 }} onPress={pickImage}>
+                        <MaterialCommunityIcons name="image" size={30} color="white" />
                     </TouchableOpacity>
-                ) : (
-                    <TouchableOpacity style={{ marginLeft: 8 }} onPress={startRecording}>
-                        <Ionicons name="mic" size={30} color="white" />
-                    </TouchableOpacity>
-                )}
-                <TouchableOpacity style={{ marginLeft: 2 }} onPress={pickImage}>
-                    <MaterialCommunityIcons name="image-search" size={30} color="white" />
+                </View>
+
+                <TouchableOpacity className="ml-2" onPress={sendMessage}>
+                    <Ionicons name="send" size={30} color="white" />
                 </TouchableOpacity>
             </View>
-
-            <TouchableOpacity className="ml-2" onPress={sendMessage}>
-                <Ionicons name="send" size={30} color="white" />
-            </TouchableOpacity>
         </KeyboardAvoidingView>
     );
 };
@@ -179,7 +195,7 @@ const styles = StyleSheet.create({
         position: "absolute",
         top: -10,
         right: -10,
-    }
+    },
 });
 
 export default MyChatInputBar;
