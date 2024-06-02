@@ -7,6 +7,7 @@ import {
     StatusBar,
     TouchableOpacity,
     ImageBackground,
+    LogBox,
 } from "react-native";
 import MyHeader from "../components/MyHeader";
 import Swiper from "react-native-deck-swiper";
@@ -14,6 +15,9 @@ import characters from "../data/characters.json";
 import { getImage } from "../helpers";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+
+// Ignore the specific warning
+LogBox.ignoreLogs(["Sending `onAnimatedValueUpdate` with no listeners registered"]);
 
 const FeedScreen = () => {
     const [cards, setCards] = useState([]);
@@ -58,7 +62,7 @@ const FeedScreen = () => {
                     renderCard={(card) => {
                         if (!card)
                             return (
-                                <View className="h-[480] justify-end items-center rounded-lg overflow-hidden shadow-xl">
+                                <View className="h-[480] justify-end items-center rounded-lg overflow-hidden shadow-xl bg-chatbot-dark">
                                     <Text>No more cards</Text>
                                 </View>
                             );
@@ -67,7 +71,7 @@ const FeedScreen = () => {
                                 source={
                                     card.id === -1 ? { uri: card?.image_path } : getImage(card.id)
                                 }
-                                className="h-3/5 justify-end items-center rounded-3xl border-6 border-black overflow-hidden shadow-2xl"
+                                className="h-3/5 justify-end items-center rounded-3xl border-6 border-black overflow-hidden shadow-2xl bg-chatbot-dark"
                                 imageStyle={{ width: "100%", height: "100%", resizeMode: "cover" }}
                             >
                                 <View

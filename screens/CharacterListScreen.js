@@ -44,12 +44,15 @@ const CharacterListScreen = ({ navigation, route }) => {
 
     const loadNewCharacters = async (currentUser) => {
         try {
-            if (user?.uid){
-                const q = query(collection(FIREBASE_DB, "characters"), where("userId", "==", currentUser.uid));
+            if (user?.uid) {
+                const q = query(
+                    collection(FIREBASE_DB, "characters"),
+                    where("userId", "==", currentUser.uid)
+                );
                 const querySnapshot = await getDocs(q);
-                const characters = querySnapshot.docs.map(doc => ({
+                const characters = querySnapshot.docs.map((doc) => ({
                     ...doc.data(),
-                    id: doc.id // Ensure each character has an id property
+                    id: doc.id, // Ensure each character has an id property
                 }));
                 setNewCharacters(characters);
             }
@@ -90,7 +93,7 @@ const CharacterListScreen = ({ navigation, route }) => {
                 <ScrollView
                     className="flex-1"
                     keyboardDismissMode="on-drag"
-                    contentContainerStyle={{ flexGrow: 1 }}
+                    contentContainerStyle={{ flexGrow: 1, paddingTop: 16 }}
                 >
                     {newCharacters.map((character, index) => (
                         <MyChatListItem

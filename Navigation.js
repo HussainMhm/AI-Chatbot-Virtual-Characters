@@ -1,8 +1,10 @@
+import React, { useEffect, useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { View, Text, TouchableOpacity } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import HomeScreen from "./screens/HomeScreen";
 import ChatScreen from "./screens/ChatScreen";
@@ -112,15 +114,38 @@ const BottomTabNavigator = () => {
 };
 
 const Navigation = () => {
+    const [isFirstLaunch, setIsFirstLaunch] = useState(null);
+
+    useEffect(() => {
+        const checkFirstLaunch = async () => {
+            const hasLaunched = await AsyncStorage.getItem("hasCompletedOnboarding");
+            if (hasLaunched === null) {
+                setIsFirstLaunch(true);
+                await AsyncStorage.setItem("hasCompletedOnboarding", "true");
+            } else {
+                setIsFirstLaunch(false);
+            }
+        };
+
+        checkFirstLaunch();
+    }, []);
+
+    if (isFirstLaunch === null) {
+        return null; // Show a loading spinner or splash screen if needed
+    }
+
     return (
         <NavigationContainer>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="OnBoarding" component={OnBoardingScreen} />
-                <Stack.Screen
-                    name="Main"
-                    component={BottomTabNavigator}
-                    options={{ headerShown: false }}
-                />
+                {isFirstLaunch ? (
+                    <Stack.Screen name="OnBoarding" component={OnBoardingScreen} />
+                ) : (
+                    <Stack.Screen
+                        name="Main"
+                        component={BottomTabNavigator}
+                        options={{ headerShown: false }}
+                    />
+                )}
                 <Stack.Screen name="CreateCharacter" component={CharacterBuilder} />
                 <Stack.Screen name="Chat" component={ChatScreen} options={{ headerShown: false }} />
                 <Stack.Screen name="CharacterList" component={CharacterListScreen} />

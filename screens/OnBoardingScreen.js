@@ -9,20 +9,6 @@ const OnBoardingScreen = ({ navigation }) => {
     const [isFirstLaunch, setIsFirstLaunch] = useState(null);
 
     useEffect(() => {
-        const checkFirstLaunch = async () => {
-            const hasLaunched = await AsyncStorage.getItem("hasCompletedOnboarding");
-            if (hasLaunched === null) {
-                setIsFirstLaunch(true);
-                await AsyncStorage.setItem("hasCompletedOnboarding", "true");
-            } else {
-                setIsFirstLaunch(false);
-            }
-        };
-
-        checkFirstLaunch();
-    }, []);
-
-    useEffect(() => {
         if (isFirstLaunch === false) {
             navigation.replace("Main");
         }
