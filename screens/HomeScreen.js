@@ -28,7 +28,6 @@ import { FontAwesome } from "@expo/vector-icons";
 import MyCharacterSelectionList from "../components/MyCharacterSelectionList";
 import { generateCharacterPrompt } from "../api/openAi";
 
-
 const HomeScreen = ({ navigation }) => {
     const [categories] = useState(categoriesData.categories);
     const [characters] = useState(charactersData.characters);
@@ -53,10 +52,10 @@ const HomeScreen = ({ navigation }) => {
     // Listen to auth state changes
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (currentUser) => {
-            if (currentUser){
+            if (currentUser) {
                 loadFavorites();
-            }else {
-                loadFavoritesFromLocal()
+            } else {
+                loadFavoritesFromLocal();
             }
             setUser(currentUser);
         });
@@ -72,7 +71,6 @@ const HomeScreen = ({ navigation }) => {
             } else {
                 loadFavoritesFromLocal();
             }
-
         }, [user])
     );
 
@@ -132,7 +130,7 @@ const HomeScreen = ({ navigation }) => {
                 const docRef = doc(FIREBASE_DB, "user_favorites", user.uid);
                 await setDoc(docRef, { favorites: updatedFavorites });
             } else {
-                await AsyncStorage.setItem('user_favorites', JSON.stringify(updatedFavorites));
+                await AsyncStorage.setItem("user_favorites", JSON.stringify(updatedFavorites));
             }
         } catch (error) {
             console.error("Error updating favorites:", error);
@@ -142,7 +140,7 @@ const HomeScreen = ({ navigation }) => {
     // Load favorites from Firebase or AsyncStorage
     const loadFavorites = async () => {
         try {
-            if(user?.uid){
+            if (user?.uid) {
                 const docRef = doc(FIREBASE_DB, "user_favorites", user.uid);
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
@@ -156,15 +154,15 @@ const HomeScreen = ({ navigation }) => {
     };
 
     const loadFavoritesFromLocal = async () => {
-        try {   
-            const value = await AsyncStorage.getItem('user_favorites');
+        try {
+            const value = await AsyncStorage.getItem("user_favorites");
             let favoriteCharacters = value ? JSON.parse(value) : [];
             setFavorites(favoriteCharacters);
         } catch (error) {
             console.error("Error loading favorites from local home screen:", error);
         }
     };
- 
+
     // Initialize characters with categories
     useEffect(() => {
         const initialCharacters = getCharactersWithCategories(characters, categories);
@@ -204,7 +202,7 @@ const HomeScreen = ({ navigation }) => {
     const handleCharacterSelect = (character) => {
         // Navigate to chat screen with selected character
         const characterSystemPrompt = generateCharacterPrompt(character);
-        character['system_content'] = characterSystemPrompt;
+        character["system_content"] = characterSystemPrompt;
         setIsModalVisible(false);
         navigation.navigate("Chat", { character });
     };
@@ -299,8 +297,8 @@ const HomeScreen = ({ navigation }) => {
                     ))}
                 </ScrollView>
             )}
-             {/* Modal for character selection */}
-             <Modal
+            {/* Modal for character selection */}
+            <Modal
                 animationType="slide"
                 transparent={true}
                 visible={isModalVisible}

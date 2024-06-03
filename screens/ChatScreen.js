@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import {
     View,
     Text,
@@ -13,6 +13,7 @@ import {
     Switch,
     Linking,
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -47,8 +48,10 @@ const ChatScreen = ({ navigation, route }) => {
     const [isExpoVoice, setExpoVoice] = useState(true);
     const [visionImageUrl, setVisionImageUrl] = useState("");
 
-    const voiceIds = {'male': 'BkdVzTJlDSOP1TQToIvr', 'female': '9DMefmt9qE4f4VhXKMJM'};
-    const [voiceId] = useState(character?.gender  === 'male' ? voiceIds?.male : voiceIds?.female);
+    const voiceIds = { male: "BkdVzTJlDSOP1TQToIvr", female: "9DMefmt9qE4f4VhXKMJM" };
+    const [voiceId] = useState(character?.gender === "male" ? voiceIds?.male : voiceIds?.female);
+
+    const elevenLabsSoundRef = useRef(null);
 
     const ScrollViewRef = useRef();
 
@@ -79,6 +82,23 @@ const ChatScreen = ({ navigation, route }) => {
         const userMessagesExist = messages.some((message) => message.role === "user");
         setRecommendationsVisible(!userMessagesExist);
     }, [messages, audioDuration]);
+
+    useFocusEffect(
+        useCallback(() => {
+            // This will run when the screen is focused
+            return () => {
+                // This will run when the screen is unfocused or component unmounts
+                Speech.stop();
+                setAudioDuration(100);
+
+                // Stop ElevenLabs audio if it is playing
+                if (elevenLabsSoundRef.current) {
+                    elevenLabsSoundRef.current.stopAsync();
+                    elevenLabsSoundRef.current = null;
+                }
+            };
+        }, [])
+    );
 
     const loadVoiceEnabled = async () => {
         try {
@@ -343,6 +363,9 @@ const ChatScreen = ({ navigation, route }) => {
                     { uri: uri },
                     { shouldPlay: true }
                 );
+
+                // Store the sound object in the reference
+                elevenLabsSoundRef.current = sound;
 
                 // Set isLoading to false after starting the audio
                 setLoading(false);

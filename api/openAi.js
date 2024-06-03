@@ -3,25 +3,26 @@ import { API_KEY, API_URL } from "../constants";
 
 const client = axios.create({
     headers: {
-        "Authorization": `Bearer ${API_KEY}`,
+        Authorization: `Bearer ${API_KEY}`,
         "Content-Type": "application/json",
-    }
+    },
 });
 
 const chatGbtEndpoint = `${API_URL}v1/chat/completions`;
 const dalleEndpoint = `${API_URL}v1/images/generations`;
 
-export const apiCall = async (prompt, messages, imageUrl='') => {
+export const apiCall = async (prompt, messages, imageUrl = "") => {
     try {
         // Emotion detection example prompt
         const emotionDetectionPrompt = `Detect the emotional tone from the following user message: "${prompt}"`;
         const emotionRes = await client.post(chatGbtEndpoint, {
-            model: 'gpt-3.5-turbo',
-            messages: [{ role: 'system', content: emotionDetectionPrompt }],
-            max_tokens: 10
+            model: "gpt-3.5-turbo",
+            messages: [{ role: "system", content: emotionDetectionPrompt }],
+            max_tokens: 10,
         });
-        
-        let emotion = emotionRes?.data?.choices[0]?.message?.content.toLowerCase().trim() ?? 'happy';
+
+        let emotion =
+            emotionRes?.data?.choices[0]?.message?.content.toLowerCase().trim() ?? "happy";
 
         // Improved classification
         const classificationPrompt = `
@@ -31,21 +32,23 @@ export const apiCall = async (prompt, messages, imageUrl='') => {
         `;
 
         let classificationRes, isArt;
-        
-        if (imageUrl == ''){
 
+        if (imageUrl == "") {
             classificationRes = await client.post(chatGbtEndpoint, {
-                model: 'gpt-3.5-turbo',
-                messages: [{
-                    role: 'user',
-                    content: classificationPrompt
-                }],
-                max_tokens: 10 // Ensure the response is very short
+                model: "gpt-3.5-turbo",
+                messages: [
+                    {
+                        role: "user",
+                        content: classificationPrompt,
+                    },
+                ],
+                max_tokens: 10, // Ensure the response is very short
             });
 
-            isArt = classificationRes?.data?.choices[0]?.message?.content.toLowerCase().trim() === 'art';
+            isArt =
+                classificationRes?.data?.choices[0]?.message?.content.toLowerCase().trim() ===
+                "art";
         }
-
 
         const systemPrompt = `
         As an AI character, you have detected an emotional tone of ${emotion} from the user. you are endowed with a specific set of characteristics and a defined historical context, Here is how you can adapt:
@@ -64,7 +67,7 @@ export const apiCall = async (prompt, messages, imageUrl='') => {
         
         7. **Proactive Engagement**: Interact with the user by not only answering their questions but also asking your own to maintain an engaging and continuous dialogue. 
         
-        8. **Avoid Negatives**: Always strive to provide answers, steering clear of responses like "I don't know" or "I can't."
+        8. **Avoid Negatives**: Always strive to provide answers, steering clear of responses like "I don't know" or "I can't. Don't respond with As an AI, I don't have personal preferences or feelings. Instead, provide a relevant answer or redirect the conversation."
         
         9. **Token Limit**: Ensure your responses do not exceed 400 tokens to maintain concise and clear communication.
         
@@ -78,12 +81,12 @@ export const apiCall = async (prompt, messages, imageUrl='') => {
         `;
 
         messages.push({
-            role: 'system',
-            content: systemPrompt.trim()
+            role: "system",
+            content: systemPrompt.trim(),
         });
 
-        if (imageUrl !== ''){
-            return imageAnalysisApiCall(prompt, imageUrl, messages || [])
+        if (imageUrl !== "") {
+            return imageAnalysisApiCall(prompt, imageUrl, messages || []);
         } else {
             if (isArt) {
                 return dalleApiCall(prompt, messages || []);
@@ -100,17 +103,17 @@ export const apiCall = async (prompt, messages, imageUrl='') => {
 const chatApiCall = async (prompt, messages) => {
     try {
         const res = await client.post(chatGbtEndpoint, {
-            model: 'gpt-3.5-turbo',
+            model: "gpt-3.5-turbo",
             messages: messages,
             temperature: 0.5,
-            max_tokens: 400
+            max_tokens: 400,
         });
 
         let answer = res.data?.choices[0]?.message?.content;
-        messages.push({ role: 'assistant', content: answer.trim() });
+        messages.push({ role: "assistant", content: answer.trim() });
         return Promise.resolve({ success: true, data: messages });
     } catch (err) {
-        console.error('error: ', err);
+        console.error("error: ", err);
         return Promise.resolve({ success: false, msg: err.message });
     }
 };
@@ -120,57 +123,56 @@ const dalleApiCall = async (prompt, messages) => {
         const res = await client.post(dalleEndpoint, {
             prompt,
             n: 1,
-            size: '512x512'
+            size: "512x512",
         });
 
         let url = res.data?.data[0]?.url;
         console.log(`got url of the image ${url}`);
-        messages.push({ role: 'assistant', content: url });
+        messages.push({ role: "assistant", content: url });
         return Promise.resolve({ success: true, data: messages });
     } catch (err) {
-        console.error('error: ', err);
+        console.error("error: ", err);
         return Promise.resolve({ success: false, msg: err.message });
     }
 };
 
-
 const imageAnalysisApiCall = async (prompt, imageUrl, messages) => {
     try {
         const res = await client.post(chatGbtEndpoint, {
-            model: 'gpt-4o',
+            model: "gpt-4o",
             messages: [
                 {
-                    role: 'user',
+                    role: "user",
                     content: [
                         { type: "text", text: prompt },
-                        { type: "image_url", image_url: { url: imageUrl } }
-                    ]
-                }
+                        { type: "image_url", image_url: { url: imageUrl } },
+                    ],
+                },
             ],
-            max_tokens: 300
+            max_tokens: 300,
         });
 
         let analysis = res.data?.choices[0]?.message?.content;
 
-        messages.push({ role: 'assistant', content: analysis.trim() });
+        messages.push({ role: "assistant", content: analysis.trim() });
         return Promise.resolve({ success: true, data: messages });
     } catch (err) {
-        console.error('error: ', err);
+        console.error("error: ", err);
         return Promise.resolve({ success: false, msg: err.message });
     }
 };
 
 // Recursive function to handle nested objects
-function formatAdditionalInfo(details, indent = '  ') {
-    let formattedDetails = '';
+function formatAdditionalInfo(details, indent = "  ") {
+    let formattedDetails = "";
     for (let [key, value] of Object.entries(details)) {
-        if (typeof value === 'object' && !Array.isArray(value)) {
-            formattedDetails += `${indent}${key}:\n${formatAdditionalInfo(value, indent + '  ')}`;
+        if (typeof value === "object" && !Array.isArray(value)) {
+            formattedDetails += `${indent}${key}:\n${formatAdditionalInfo(value, indent + "  ")}`;
         } else if (Array.isArray(value)) {
             formattedDetails += `${indent}${key}:\n`;
-            value.forEach(item => {
-                if (typeof item === 'object') {
-                    formattedDetails += `${indent}- ${formatAdditionalInfo(item, indent + '  ')}`;
+            value.forEach((item) => {
+                if (typeof item === "object") {
+                    formattedDetails += `${indent}- ${formatAdditionalInfo(item, indent + "  ")}`;
                 } else {
                     formattedDetails += `${indent}- ${item}\n`;
                 }
@@ -189,7 +191,9 @@ export function generateCharacterPrompt(character) {
     });
 
     if (character.additional_information) {
-        prompt += `\nAdditional Information that you have to remember:\n${formatAdditionalInfo(character.additional_information)}`;
+        prompt += `\nAdditional Information that you have to remember:\n${formatAdditionalInfo(
+            character.additional_information
+        )}`;
     }
 
     return prompt;
