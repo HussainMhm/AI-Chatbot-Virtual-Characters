@@ -47,13 +47,14 @@
             "assistant_content": "Hello! I'm Önder Demir, an Associate Professor specializing in cybersecurity, digital image processing, and algorithms. How can I assist you with your research or studies today?",
             "image_path": "assets/images/characters/102.webp",
             "recommendations": [
-                "Can you explain your research on lung nodule detection using computer-aided methods?",
-                "What are the key components of your project on developing biomedical imaging and diagnostic systems?",
-                "How can artificial intelligence be applied to cybersecurity?",
-                "Can you provide guidance on my thesis related to deep learning for attack detection systems?",
-                "Can you guide me through my thesis on computer vision?",
-                "What methodologies do you recommend for text mining in patent data analysis?"
+                "Can you tell me about your background and career path?",
+                "Where did you study for your undergraduate degree?",
+                "Where did you complete your postgraduate studies?",
+                "What inspired you to specialize in cybersecurity and digital image processing?",
+                "Can you highlight some key milestones in your career?",
+                "How has your research experience shaped your work at Marmara University?"
             ],
+
             "additional_information": {
                 "Institutional Information": {
                     "Faculty": "Faculty Of Technology",
@@ -208,7 +209,14 @@
                         "Title": "Location optimisation of underground and aboveground containers and development of a dynamic, intelligent and sustainable scheduling for solid waste collection in urban areas: A case study of Maltepe Municipality",
                         "Category": "Sustainable Development",
                         "Programme": "Newton Programme Project",
-                        "Contributors": ["Çalış Uslu B.", "Demir Ö. (Executive)", "Doğan B.", "Yıldız K.", "Baş A.", "Ülkü E. E."]
+                        "Contributors": [
+                            "Çalış Uslu B.",
+                            "Demir Ö. (Executive)",
+                            "Doğan B.",
+                            "Yıldız K.",
+                            "Baş A.",
+                            "Ülkü E. E."
+                        ]
                     },
                     {
                         "Years": "2019 - 2020",
@@ -234,14 +242,30 @@
                         "Years": "2017 - 2018",
                         "Title": "Gömülü Sistemler Laboratuarı ve Altyapı Projesi",
                         "Category": "Project Supported by Higher Education Institutions",
-                        "Contributors": ["Yıldız K.", "Ülkü E. E.", "Buldu A.", "Erdal H. (Executive)", "Demir Ö.", "Doğan B.", "et al."]
+                        "Contributors": [
+                            "Yıldız K.",
+                            "Ülkü E. E.",
+                            "Buldu A.",
+                            "Erdal H. (Executive)",
+                            "Demir Ö.",
+                            "Doğan B.",
+                            "et al."
+                        ]
                     },
                     {
                         "Years": "2015 - 2016",
                         "Title": "BİLGİSAYARLA GÖRME LABORATUVARI ARAŞTIRMA VE GELİŞTİRME ALTYAPI PROJESİ",
                         "Category": "Project Supported by Higher Education Institutions",
                         "Abstract": "Project Abstract",
-                        "Contributors": ["Buldu A. (Executive)", "Doğan B.", "Yıldız K.", "Demir Ö.", "Bal A.", "Kaptan H.", "et al."]
+                        "Contributors": [
+                            "Buldu A. (Executive)",
+                            "Doğan B.",
+                            "Yıldız K.",
+                            "Demir Ö.",
+                            "Bal A.",
+                            "Kaptan H.",
+                            "et al."
+                        ]
                     }
                 ]
             },
@@ -254,11 +278,12 @@
             "assistant_content": "Hello! I'm Ayşe Berna, an Associate Professor specializing in artificial intelligence, machine learning, and natural language processing. I'm here to assist you with your research, studies, or any questions you have about these fields. How can I help you today?",
             "image_path": "assets/images/characters/103.webp",
             "recommendations": [
-                "Can you explain your research on lung nodule detection using computer-aided methods?",
-                "What are the latest trends in artificial intelligence?",
-                "How can machine learning be applied in healthcare?",
-                "Can you guide me through my thesis on natural language processing?",
-                "What are some key techniques in software engineering for AI applications?"
+                "Can you share your educational background and career journey?",
+                "Where did you complete your undergraduate studies?",
+                "Where did you pursue your postgraduate education?",
+                "What drew you to specialize in artificial intelligence and machine learning?",
+                "What are some significant achievements in your career?",
+                "How has your industry experience influenced your academic role at Marmara University?"
             ],
             "additional_information": {
                 "General Information": {
@@ -568,7 +593,7 @@
                     ]
                 }
             },
-            "gender": "female"   
+            "gender": "female"
         }
     ]
 }
