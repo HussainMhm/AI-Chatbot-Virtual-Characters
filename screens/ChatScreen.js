@@ -76,6 +76,9 @@ const ChatScreen = ({ navigation, route }) => {
             if (lastMessage.role === "assistant" && lastMessage.content.length > 0) {
                 displayMessageGradually(lastMessage.content, audioDuration);
             }
+
+            // Scroll to the bottom after messages are updated
+            ScrollViewRef.current?.scrollToEnd({ animated: true });
         }
 
         // Check if there are any user messages and hide recommendations if there are
@@ -385,6 +388,9 @@ const ChatScreen = ({ navigation, route }) => {
         }
         // Set messages after handling the audio and loading state
         setMessages(messages);
+
+        // Scroll to the bottom after setting messages
+        ScrollViewRef.current?.scrollToEnd({ animated: true });
     };
 
     const toggleVoice = async () => {
@@ -480,39 +486,48 @@ const ChatScreen = ({ navigation, route }) => {
     };
 
     const parseMarkdown = (text) => {
-        const regex = /(\*\*|__)(.*?)\1|(\*|_)(.*?)\3|(!?\[([^\]]+)\]\(([^\)]+)\))/g;
+        const regex = /(\d+\.\s)(.*?)|(\*\*|__)(.*?)\3|(\*|_)(.*?)\5|(!?\[([^\]]+)\]\(([^\)]+)\))/g;
         let segments = [];
         let lastIndex = 0;
 
-        text.replace(regex, (match, p1, p2, p3, p4, p5, altText, linkUrl, offset) => {
-            if (lastIndex < offset) {
-                segments.push({
-                    text: text.substring(lastIndex, offset),
-                    style: {},
-                });
-            }
+        text.replace(
+            regex,
+            (match, p1, title, p3, boldText, p5, italicText, p6, altText, linkUrl, offset) => {
+                if (lastIndex < offset) {
+                    segments.push({
+                        text: text.substring(lastIndex, offset),
+                        style: {},
+                    });
+                }
 
-            if (p2) {
-                segments.push({
-                    text: "\n\n" + p2,
-                    style: { fontWeight: "bold" },
-                });
-            } else if (p4) {
-                segments.push({
-                    text: p4,
-                    style: { fontStyle: "italic" },
-                });
-            } else if (linkUrl) {
-                segments.push({
-                    text: altText,
-                    style: { color: "blue", textDecorationLine: "underline" },
-                    type: "link",
-                    url: linkUrl,
-                });
-            }
+                if (p1) {
+                    const formattedText = `\n\n${p1}${title}`;
+                    segments.push({
+                        text: formattedText,
+                        style: {},
+                    });
+                } else if (boldText) {
+                    segments.push({
+                        text: boldText,
+                        style: { fontWeight: "bold" },
+                    });
+                } else if (italicText) {
+                    segments.push({
+                        text: italicText,
+                        style: { fontStyle: "italic" },
+                    });
+                } else if (linkUrl) {
+                    segments.push({
+                        text: altText,
+                        style: { color: "blue", textDecorationLine: "underline" },
+                        type: "link",
+                        url: linkUrl,
+                    });
+                }
 
-            lastIndex = offset + match.length;
-        });
+                lastIndex = offset + match.length;
+            }
+        );
 
         if (lastIndex < text.length) {
             segments.push({
@@ -520,6 +535,7 @@ const ChatScreen = ({ navigation, route }) => {
                 style: {},
             });
         }
+
         return segments;
     };
 
