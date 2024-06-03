@@ -519,7 +519,7 @@ const ChatScreen = ({ navigation, route }) => {
                 } else if (linkUrl) {
                     segments.push({
                         text: altText,
-                        style: { color: "blue", textDecorationLine: "underline" },
+                        style: { color: "#039BE5", textDecorationLine: "underline" },
                         type: "link",
                         url: linkUrl,
                     });
